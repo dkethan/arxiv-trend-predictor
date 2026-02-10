@@ -3,6 +3,6 @@ services:
     name: arxiv-trend-predictor-api
     runtime: python
     plan: free
-    buildCommand: pip install -r backend/requirements.txt
+    buildCommand: pip install --upgrade pip && pip install --retries 5 --timeout 300 -r backend/requirements.txt
     startCommand: python -m backend.main
     healthCheckPath: /health
