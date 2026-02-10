@@ -27,12 +27,12 @@ Interactive docs:
 
 ### Deploying to Render
 
-1. **Push your repo to GitHub** (or GitLab) and ensure the root contains `render.yaml` and `requirements.txt`.
+1. **Push your repo to GitHub** (or GitLab) and ensure the root contains `render.yaml`; backend deps are in `backend/requirements.txt`.
 
 2. **In [Render Dashboard](https://dashboard.render.com)** → **New** → **Blueprint**. Connect the repo; Render will detect `render.yaml` and create the web service.
 
 3. **Or create a Web Service manually**: **New** → **Web Service**, connect the repo, then set:
-   - **Build command:** `pip install -r requirements.txt`
+   - **Build command:** `pip install -r backend/requirements.txt`
    - **Start command:** `python -m backend.main`
    - **Health check path:** `/health` (optional; enables zero-downtime deploys)
 

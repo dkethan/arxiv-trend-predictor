@@ -18,8 +18,8 @@ Idea Advisor and analysis tools for arXiv tech papers (scraper, analysis, model 
 python -m venv .venv
 source .venv/bin/activate  # on Windows: .venv\Scripts\activate
 
-# 2) Install dependencies
-pip install -r requirements.txt
+# 2) Install dependencies (backend API and shared tooling)
+pip install -r backend/requirements.txt
 
 # 3) Create your .env from the example
 cp .env.example .env
