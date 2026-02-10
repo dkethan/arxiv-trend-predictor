@@ -1,0 +1,21 @@
+# Render Blueprint: arxiv-trend-predictor backend
+# See https://docs.render.com/blueprint-spec
+
+services:
+  - type: web
+    name: arxiv-trend-predictor-api
+    runtime: python
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m backend.main
+
+    healthCheckPath: /health
+
+    # Optional: set in Render Dashboard instead
+    # envVars:
+    #   - key: LOG_LEVEL
+    #     value: INFO
+    #   - key: ENABLE_ANALYSIS_EMBEDDINGS
+    #     value: "true"
+    #   - key: ENABLE_PLOTTING
+    #     value: "true"

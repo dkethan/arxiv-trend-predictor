@@ -74,20 +74,20 @@ python -m backend.main
 **Verify Step 2 is complete:**
 
 1. The server should start without errors
-2. Test the health endpoint:
+2. Test the health endpoint (use `API_HOST` and `API_PORT` from your `.env` / settings):
    ```bash
-   curl http://localhost:8000/health
+   curl http://$API_HOST:$API_PORT/health
    ```
    Should return: `{"status": "ok"}`
 
 3. Test the readiness endpoint:
    ```bash
-   curl http://localhost:8000/health/ready
+   curl http://$API_HOST:$API_PORT/health/ready
    ```
    Should return readiness status with model file checks
 
 4. Open the interactive docs:
-   - Go to `http://localhost:8000/docs` in your browser
+   - Go to `http://<API_HOST>:<API_PORT>/docs` in your browser (values from settings)
    - You should see the Swagger UI with available endpoints
 
 **For more details on endpoints and usage:**
@@ -105,13 +105,14 @@ Once the server is running and you've verified the endpoints work, proceed to St
 **Example request:**
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/advisor/advise \
+curl -X POST http://$API_HOST:$API_PORT/api/v1/advisor/advise \
   -H "Content-Type: application/json" \
   -d '{
         "title": "Your idea title",
         "abstract": "Optional longer description..."
       }'
 ```
+(Use `API_HOST` and `API_PORT` from your settings.)
 
 **Verify Step 3 is complete:**
 - You should get a JSON response with `domain`, `domain_confidence`, `suggested_keywords`, etc.

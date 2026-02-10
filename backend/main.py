@@ -8,28 +8,29 @@ This file:
 Run:
     python -m backend.main
 
-Then open:
-    - http://localhost:8000/docs           (interactive API docs)
-    - POST http://localhost:8000/api/v1/advisor/advise
+Then open (host/port from settings):
+    - http://<API_HOST>:<API_PORT>/docs     (interactive API docs)
+    - POST http://<API_HOST>:<API_PORT>/api/v1/advisor/advise
 """
 
 from __future__ import annotations
 
+import os
 import uvicorn
 
-from backend.api.main import app  # FastAPI instance
 from backend.core.config import settings
 
 
 def run_server() -> None:
     """
     Start the FastAPI server using config-defined host/port.
+    Reload is disabled when PORT is set (e.g. on Render) for production.
     """
     uvicorn.run(
-        app,
+        "backend.api.main:app",
         host=settings.api_host,
         port=settings.api_port,
-        reload=True,
+        reload=not bool(os.environ.get("PORT")),
     )
 
 

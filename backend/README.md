@@ -13,7 +13,7 @@ From the repo root (after installing dependencies):
 python -m backend.main
 ```
 
-This uses `API_HOST` and `API_PORT` from `.env` (defaults to `0.0.0.0:8000`).
+Host and port come from settings only (`API_HOST`, `API_PORT` in `.env`; see `backend/core/config.py`).
 
 Key endpoints:
 
@@ -23,4 +23,21 @@ Key endpoints:
 
 Interactive docs:
 
-- Open `http://localhost:8000/docs` in your browser.
+- Open `http://<API_HOST>:<API_PORT>/docs` in your browser (use the values from your settings).
+
+### Deploying to Render
+
+1. **Push your repo to GitHub** (or GitLab) and ensure the root contains `render.yaml` and `requirements.txt`.
+
+2. **In [Render Dashboard](https://dashboard.render.com)** → **New** → **Blueprint**. Connect the repo; Render will detect `render.yaml` and create the web service.
+
+3. **Or create a Web Service manually**: **New** → **Web Service**, connect the repo, then set:
+   - **Build command:** `pip install -r requirements.txt`
+   - **Start command:** `python -m backend.main`
+   - **Health check path:** `/health` (optional; enables zero-downtime deploys)
+
+4. **Environment variables** (optional): In the service **Environment** tab, add any of:
+   - `LOG_LEVEL`, `DATA_DIR`, `MODEL_DIR`, `ARXIV_START_YEAR`, `ARXIV_END_YEAR`, `PAPERS_PER_CATEGORY_PER_YEAR`, `ENABLE_ANALYSIS_EMBEDDINGS`, `ENABLE_PLOTTING`  
+   See `.env.example` in the repo root. Render sets `PORT` automatically; the app uses it when present.
+
+5. **Deploy**: Render builds and deploys on each push to the linked branch. The API will be at `https://<service-name>.onrender.com` (e.g. `/docs`, `/health`, `/api/v1/advisor/advise`).

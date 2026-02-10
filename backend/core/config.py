@@ -12,12 +12,12 @@ class Settings:
     the app works out-of-the-box for local development.
     """
 
-    # Project root (one level above `app/`)
+    # Project root (one level above `backend/`)
     project_root: Path = Path(__file__).resolve().parents[2]
 
     # Paths
     data_dir: Path = Path(os.getenv("DATA_DIR", project_root / "data"))
-    model_dir: Path = Path(os.getenv("MODEL_DIR", project_root / "app" / "models"))
+    model_dir: Path = Path(os.getenv("MODEL_DIR", project_root / "backend" / "models"))
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
 
     # ArXiv scraper configuration
@@ -39,8 +39,9 @@ class Settings:
     }
 
     # API settings (used by uvicorn/FastAPI entrypoints)
+    # Render and similar platforms set PORT; fall back to API_PORT then 60000
     api_host: str = os.getenv("API_HOST", "0.0.0.0")
-    api_port: int = int(os.getenv("API_PORT", "8000"))
+    api_port: int = int(os.getenv("PORT") or os.getenv("API_PORT", "60000"))
 
     @property
     def arxiv_data_dir(self) -> Path:

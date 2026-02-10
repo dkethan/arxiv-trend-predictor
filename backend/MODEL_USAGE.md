@@ -72,10 +72,10 @@ Start the backend:
 python -m backend.main
 ```
 
-Then call the advisor over HTTP:
+Then call the advisor over HTTP (host/port from settings – `API_HOST`, `API_PORT`):
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/advisor/advise \
+curl -X POST http://$API_HOST:$API_PORT/api/v1/advisor/advise \
   -H "Content-Type: application/json" \
   -d '{
         "title": "Your idea title goes here",
