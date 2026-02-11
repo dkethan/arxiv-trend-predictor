@@ -12,6 +12,17 @@
     text: "#8b8d98",
   };
 
+  const EXAMPLES = {
+    1: {
+      title: "Attention Is All You Need: Transformers for Sequence Modeling",
+      abstract: "We propose a new architecture based entirely on self-attention mechanisms, dispensing with recurrence and convolutions. The Transformer achieves state-of-the-art results on machine translation and scales effectively to large datasets.",
+    },
+    2: {
+      title: "Neural Radiance Fields for View Synthesis and 3D Reconstruction",
+      abstract: "We present a method that represents a scene as a continuous 5D function and uses volume rendering to synthesize novel views. By optimizing a fully-connected neural network without convolutional layers, we achieve high-resolution photorealistic results.",
+    },
+  };
+
   const form = document.getElementById("advise-form");
   const submitBtn = document.getElementById("submit-btn");
   const statusEl = document.getElementById("status");
@@ -346,6 +357,18 @@
     resultMessage.innerHTML = renderMessage(data.message || "");
     resultDisclaimer.textContent = data.disclaimer || "";
   }
+
+  document.querySelectorAll(".btn-example").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var key = btn.getAttribute("data-example");
+      var ex = EXAMPLES[key];
+      if (!ex) return;
+      var titleInput = document.getElementById("title");
+      var abstractInput = document.getElementById("abstract");
+      if (titleInput) titleInput.value = ex.title;
+      if (abstractInput) abstractInput.value = ex.abstract;
+    });
+  });
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();

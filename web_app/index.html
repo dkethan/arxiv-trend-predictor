@@ -42,9 +42,12 @@
           <button type="submit" id="submit-btn" class="btn btn-primary">
             Get advice
           </button>
-          <span id="status" class="status" aria-live="polite"></span>
+          <button type="button" class="btn btn-example" data-example="1">Ex 1 — Transformers</button>
+          <button type="button" class="btn btn-example" data-example="2">Ex 2 — NeRF</button>
         </div>
       </form>
+      <p class="form-note">Click <strong>Get advice</strong> to get advice. Click <strong>Ex 1 — Transformers</strong> or <strong>Ex 2 — NeRF</strong> to fill the title and abstract automatically with an example.</p>
+      <p id="status" class="status status-below-note" aria-live="polite"></p>
 
       <section id="result" class="result hidden" aria-live="polite">
         <div class="result-inner">

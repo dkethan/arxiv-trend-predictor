@@ -118,7 +118,19 @@ body::after {
 
 /* ----- Form ----- */
 .form {
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-note {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: 0 0 2rem;
+  line-height: 1.5;
+}
+
+.form-note strong {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .field {
@@ -158,8 +170,8 @@ body::after {
 .field input:focus,
 .field textarea:focus {
   outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--accent-soft), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
   background: var(--surface-elevated);
 }
 
@@ -209,9 +221,27 @@ body::after {
   transform: none;
 }
 
+.btn-example {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+.btn-example:hover {
+  border-color: var(--border-focus);
+  background: var(--surface-elevated);
+  color: var(--accent);
+}
+
 .status {
   font-size: 0.875rem;
   color: var(--text-muted);
+}
+
+.status-below-note {
+  margin: 0.5rem 0 2rem;
+  min-height: 1.25em;
 }
 
 /* ----- Results ----- */
