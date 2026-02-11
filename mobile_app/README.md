@@ -1,6 +1,16 @@
-## mobile_app
+# arxiv_trend_mobile
 
-Placeholder for the future mobile client that will call the `backend` API (e.g. `/api/v1/advisor/advise`).
+A new Flutter project.
 
-- Framework: to be decided (e.g. React Native, Flutter).
-- This folder is currently empty on purpose; you can treat it as the root for the mobile app project.
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.

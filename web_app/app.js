@@ -32,6 +32,7 @@
   const resultDomain = document.getElementById("result-domain");
   const resultGrowth = document.getElementById("result-growth");
   const resultKeywords = document.getElementById("result-keywords");
+  const resultMessageWrap = document.getElementById("result-message-wrap");
   const resultMessage = document.getElementById("result-message");
   const resultDisclaimer = document.getElementById("result-disclaimer");
   const errorSection = document.getElementById("error");
@@ -263,9 +264,33 @@
 
   function renderMessage(text) {
     if (!text) return "";
-    return text
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\n/g, "<br>");
+    var rawLines = text.split(/\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (rawLines.length === 0) return "";
+
+    var items;
+    var allNumbered = rawLines.length > 0 && rawLines.every(function (line) {
+      return /^\d+\.\s*.+/.test(line);
+    });
+    if (allNumbered && rawLines.length > 1) {
+      // Already "1. ..." "2. ..." from API
+      items = rawLines.map(function (line) {
+        var m = line.match(/^\d+\.\s*(.*)$/);
+        return (m ? m[1] : line).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      });
+    } else {
+      // Single paragraph from API: split at sentence boundaries (period + space + capital letter)
+      var paragraph = rawLines.join(" ");
+      var sentences = paragraph.split(/\.\s+(?=[A-Z])/).map(function (s) {
+        return s.trim();
+      }).filter(Boolean);
+      items = sentences.map(function (s) {
+        var withPeriod = s.slice(-1) === "." ? s : s + ".";
+        return withPeriod.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      });
+    }
+    if (items.length === 0) return "";
+    var lis = items.map(function (html) { return "<li>" + html + "</li>"; }).join("");
+    return "<ol class=\"result-message-list\">" + lis + "</ol>";
   }
 
   function renderResult(data) {
@@ -276,18 +301,18 @@
 
     if (vizNumbers) {
       var an = data.alternate_domains || [];
-      var parts = [];
-      parts.push("<span class=\"viz-num-item\"><strong>" + escapeHtml(data.domain || "Primary") + "</strong> " + formatPercent(data.domain_confidence ?? 0) + "</span>");
+      var items = [];
+      items.push("<li class=\"viz-num-item\"><strong>" + escapeHtml(data.domain || "Primary") + "</strong> " + formatPercent(data.domain_confidence ?? 0) + "</li>");
       an.forEach(function (item) {
         var name = Array.isArray(item) ? item[0] : item.domain;
         var conf = Array.isArray(item) ? item[1] : item.confidence;
-        parts.push("<span class=\"viz-num-item\">" + escapeHtml(name) + " " + formatPercent(conf) + "</span>");
+        items.push("<li class=\"viz-num-item\">" + escapeHtml(name) + " " + formatPercent(conf) + "</li>");
       });
       var growthPct = data.domain_growth_score != null ? (Number(data.domain_growth_score) * 100).toFixed(1) + "%" : "—";
+      items.push("<li class=\"viz-num-item\"><strong>Growth score:</strong> <span class=\"viz-num-growth\">" + growthPct + "</span></li>");
       vizNumbers.innerHTML =
         "<p class=\"viz-numbers-title\">Numbers at a glance</p>" +
-        "<p class=\"viz-numbers-row\">" + parts.join(" <span class=\"viz-num-sep\">·</span> ") + "</p>" +
-        "<p class=\"viz-numbers-row\"><strong>Growth score:</strong> <span class=\"viz-num-growth\">" + growthPct + "</span></p>";
+        "<ul class=\"viz-numbers-list\">" + items.join("") + "</ul>";
     }
 
     resultDomain.innerHTML = "";
@@ -354,7 +379,9 @@
       resultKeywords.innerHTML = "<p class=\"keywords-list\">No keywords suggested.</p>";
     }
 
-    resultMessage.innerHTML = renderMessage(data.message || "");
+    var messageHtml = renderMessage(data.message || "");
+    if (resultMessage) resultMessage.innerHTML = messageHtml;
+    if (resultMessageWrap) resultMessageWrap.classList.toggle("hidden", !messageHtml);
     resultDisclaimer.textContent = data.disclaimer || "";
   }
 

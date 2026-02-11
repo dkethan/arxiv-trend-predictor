@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -7,13 +10,14 @@ plugins {
 
 // Load keystore properties if they exist
 val keystorePropertiesFile = rootProject.file("key.properties")
-val keystoreProperties = java.util.Properties()
+val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
-    namespace = "com.example.arxiv_trend_mobile"
+    // Use a unique, non-reserved package name
+    namespace = "com.kethandosapati.arxiv_trend_advisor"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -27,7 +31,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.arxiv_trend_mobile"
+        applicationId = "com.kethandosapati.arxiv_trend_advisor"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

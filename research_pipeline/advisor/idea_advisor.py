@@ -286,13 +286,13 @@ def advise_idea(
     kw_str = ", ".join(keywords[:5]) if keywords else "—"
     alt_str = "; ".join(f"{d} ({p:.2f})" for d, p in alternate_domains[:3])
 
-    msg = f"Your idea fits best in **{domain}** (confidence: {domain_probs.get(domain, 0):.2f}). "
-    if alternate_domains:
-        msg += f"Also close: {alt_str}. "
-    msg += (
-        f"This category has **{growth_label}**. "
-        f"Consider emphasizing: {kw_str}."
-    )
+    conf_pct = domain_probs.get(domain, 0)
+    points = [
+        f"Your idea fits best in **{domain}** (confidence: {conf_pct:.2f}).",
+        f"This category has **{growth_label}**." + (f" Also close: {alt_str}." if alternate_domains else ""),
+        f"Consider emphasizing: {kw_str}.",
+    ]
+    msg = "\n".join(f"{i}. {p}" for i, p in enumerate(points, 1))
 
     return {
         "domain": domain,
