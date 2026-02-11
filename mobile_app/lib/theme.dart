@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Matches the web app CSS variables exactly
 class AppColors {
@@ -17,6 +18,26 @@ class AppColors {
   static const errorSoft = Color(0x1FF87171); // rgba(248,113,113,0.12)
 }
 
+/// Card decoration matching web: .card
+BoxDecoration get appCardDecoration => BoxDecoration(
+      color: AppColors.surface.withValues(alpha: 0.85),
+      border: Border.all(color: AppColors.border),
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0x66000000),
+          blurRadius: 24,
+          offset: const Offset(0, 4),
+        ),
+        BoxShadow(
+          color: Colors.white.withValues(alpha: 0.03),
+          blurRadius: 0,
+          spreadRadius: 1,
+          offset: Offset.zero,
+        ),
+      ],
+    );
+
 final appTheme = ThemeData(
   brightness: Brightness.dark,
   scaffoldBackgroundColor: AppColors.bg,
@@ -29,7 +50,9 @@ final appTheme = ThemeData(
     onPrimary: AppColors.bg,
   ),
   useMaterial3: true,
-  fontFamily: 'Roboto',
+  textTheme: GoogleFonts.outfitTextTheme(
+    ThemeData.dark().textTheme,
+  ),
   appBarTheme: const AppBarTheme(
     backgroundColor: AppColors.bg,
     foregroundColor: AppColors.text,

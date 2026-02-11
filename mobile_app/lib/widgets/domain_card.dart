@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/advisor_response.dart';
 import '../theme.dart';
 
 /// Matches the web app's .domain-card exactly:
-/// domain name (teal) + confidence (mono) on one row,
-/// then a divider and alternate domains table.
+/// domain name (teal, Syne) + confidence (mono) on one row,
+/// then "Also close (compare all four)" and alternate domains table.
 class DomainCard extends StatelessWidget {
   final String domain;
   final double confidence;
@@ -23,71 +24,59 @@ class DomainCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 24,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+      decoration: appCardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Main row: domain name + confidence
+          // Main row: domain name + confidence (web: .domain-main-row)
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
               Expanded(
                 child: Text(
-                  domain,
-                  style: const TextStyle(
-                    fontSize: 22,
+                  domain.isEmpty ? '—' : domain,
+                  style: GoogleFonts.syne(
+                    fontSize: 21.6,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
+                    letterSpacing: -0.02 * 21.6,
                     color: AppColors.accent,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Text(
                 _pct(confidence),
-                style: const TextStyle(
+                style: GoogleFonts.jetBrainsMono(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  fontFamily: 'monospace',
                   color: AppColors.text,
                 ),
               ),
             ],
           ),
 
-          // Alternates
+          // Alternates (web: .alternates, "Also close (compare all four)")
           if (alternateDomains.isNotEmpty) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             Container(
               width: double.infinity,
               height: 1,
               color: AppColors.border,
             ),
-            const SizedBox(height: 14),
-            const Text(
+            const SizedBox(height: 16),
+            Text(
               'ALSO CLOSE (COMPARE ALL FOUR)',
-              style: TextStyle(
-                fontSize: 10,
+              style: GoogleFonts.outfit(
+                fontSize: 11.2,
                 fontWeight: FontWeight.w600,
-                letterSpacing: 1.0,
+                letterSpacing: 0.08 * 11.2,
                 color: AppColors.textMuted,
               ),
             ),
-            const SizedBox(height: 10),
-            // Header row
+            const SizedBox(height: 8),
+            // Header row (web: .alternate-list-header)
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
@@ -96,16 +85,16 @@ class DomainCard extends StatelessWidget {
                     child: Text(
                       'Domain',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppColors.text,
                       ),
                     ),
                   ),
-                  Text(
+                  const Text(
                     'Confidence',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.text,
                     ),
@@ -114,10 +103,10 @@ class DomainCard extends StatelessWidget {
               ),
             ),
             Container(height: 1, color: AppColors.border),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             // Data rows
             ...alternateDomains.map((alt) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 5),
                   child: Row(
                     children: [
                       Expanded(
@@ -131,10 +120,9 @@ class DomainCard extends StatelessWidget {
                       ),
                       Text(
                         _pct(alt.confidence),
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 14.4,
                           fontWeight: FontWeight.w500,
-                          fontFamily: 'monospace',
                           color: AppColors.text,
                         ),
                       ),

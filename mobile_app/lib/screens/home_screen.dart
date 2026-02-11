@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../models/advisor_response.dart';
 import '../theme.dart';
 import '../widgets/domain_card.dart';
 import '../widgets/growth_card.dart';
 import '../widgets/keywords_card.dart';
+import '../widgets/viz_numbers_card.dart';
+import '../widgets/insights_chart_cards.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -132,23 +135,23 @@ class _HomeScreenState extends State<HomeScreen> {
             end: Alignment.bottomRight,
             colors: [Colors.white, AppColors.textMuted],
           ).createShader(bounds),
-          child: const Text(
-            'arXiv Trend\nAdvisor',
-            style: TextStyle(
-              fontSize: 34,
+          child: Text(
+            'arXiv Trend Advisor',
+            style: GoogleFonts.syne(
+              fontSize: 32,
               fontWeight: FontWeight.w700,
               height: 1.15,
-              letterSpacing: -1.0,
-              color: Colors.white, // needed for ShaderMask
+              letterSpacing: -0.03 * 32,
+              color: Colors.white,
             ),
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'See where your idea fits and how it trends on arXiv.',
-          style: TextStyle(
+          style: GoogleFonts.outfit(
             color: AppColors.textMuted,
-            fontSize: 15,
+            fontSize: 16.8,
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -214,32 +217,34 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 16),
       child: RichText(
-        text: const TextSpan(
-          style: TextStyle(
+        text: TextSpan(
+          style: const TextStyle(
             fontSize: 13,
             color: AppColors.textMuted,
             height: 1.5,
           ),
           children: [
-            TextSpan(text: 'Click '),
-            TextSpan(
+            const TextSpan(text: 'Click '),
+            const TextSpan(
               text: 'Get advice',
               style: TextStyle(
                   color: AppColors.text, fontWeight: FontWeight.w600),
             ),
-            TextSpan(text: ' to get advice. Click '),
-            TextSpan(
-              text: 'Ex 1',
+            const TextSpan(text: ' to get advice. Click '),
+            const TextSpan(
+              text: 'Ex 1 — Transformers',
               style: TextStyle(
                   color: AppColors.text, fontWeight: FontWeight.w600),
             ),
-            TextSpan(text: ' or '),
-            TextSpan(
-              text: 'Ex 2',
+            const TextSpan(text: ' or '),
+            const TextSpan(
+              text: 'Ex 2 — NeRF',
               style: TextStyle(
                   color: AppColors.text, fontWeight: FontWeight.w600),
             ),
-            TextSpan(text: ' to fill with an example.'),
+            const TextSpan(
+                text:
+                    ' to fill the title and abstract automatically with an example.'),
           ],
         ),
       ),
@@ -287,69 +292,145 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildResults() {
     final r = _result!;
+    // Web: .result-inner padding 0.25rem 0 1.5rem; .card margin-bottom 1rem
     return Column(
       key: _resultsKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 24),
-        // "Advice" heading
-        const Text(
+        // "Advice" heading (web: .result-heading — 1.1rem, margin 0 0 1.25rem)
+        Text(
           'Advice',
-          style: TextStyle(
-            fontSize: 18,
+          style: GoogleFonts.syne(
+            fontSize: 17.6,
             fontWeight: FontWeight.w600,
-            letterSpacing: -0.3,
+            letterSpacing: -0.02 * 17.6,
             color: AppColors.textMuted,
           ),
         ),
+        const SizedBox(height: 20),
+
+        // Insights block (web: .viz-section — first thing after heading)
+        Text(
+          'INSIGHTS',
+          style: GoogleFonts.syne(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.08 * 12,
+            color: AppColors.textMuted,
+          ),
+        ),
+        const SizedBox(height: 12),
+        // 3 chart cards (web: .charts-row — chart-confidence, chart-growth, chart-scatter)
+        ChartConfidenceCard(result: r),
+        const SizedBox(height: 16),
+        ChartGrowthCard(result: r),
+        const SizedBox(height: 16),
+        ChartScatterCard(result: r),
+        const SizedBox(height: 16),
+        VizNumbersCard(result: r),
         const SizedBox(height: 16),
 
-        // Domain card
+        // Card 1: Domain (web: .domain-card)
         DomainCard(
           domain: r.domain,
           confidence: r.domainConfidence,
           alternateDomains: r.alternateDomains,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
 
-        // Growth card
+        // Card 2: Growth (web: .growth-card)
         GrowthCard(
           label: r.domainGrowthLabel,
           score: r.domainGrowthScore,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
 
-        // Keywords card
+        // Card 3: Keywords (web: .keywords-card)
         KeywordsCard(keywords: r.suggestedKeywords),
         const SizedBox(height: 16),
 
-        // Message
-        _buildMessage(r.message),
-        const SizedBox(height: 16),
+        // Card 4 (last): Summary (web: .result-message-card)
+        if (r.message.isNotEmpty) ...[
+          _buildSummaryCard(r.message),
+          const SizedBox(height: 16),
+        ],
 
-        // Disclaimer
-        Text(
-          r.disclaimer,
-          style: const TextStyle(
-            fontSize: 13,
-            color: AppColors.textMuted,
-            fontStyle: FontStyle.italic,
+        // Disclaimer (web: .disclaimer — margin 1.25rem 0 0)
+        Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: Text(
+            r.disclaimer,
+            style: const TextStyle(
+              fontSize: 12.8,
+              color: AppColors.textMuted,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMessage(String message) {
-    // Parse **bold** markers from API response
-    final parts = <InlineSpan>[];
+  Widget _buildSummaryCard(String message) {
+    // Web: .result-message-card — padding 1.25rem 1.5rem, title 0.7rem uppercase
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      decoration: appCardDecoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'SUMMARY',
+            style: GoogleFonts.outfit(
+              fontSize: 11.2,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.08 * 11.2,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildSummaryMessage(message),
+        ],
+      ),
+    );
+  }
+
+  /// Parses message like web renderMessage: numbered lines or sentence split; ** = accent.
+  List<String> _parseMessageItems(String text) {
+    if (text.trim().isEmpty) return [];
+    final rawLines =
+        text.split('\n').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    if (rawLines.isEmpty) return [];
+
+    final numbered = RegExp(r'^\d+\.\s*.+');
+    final allNumbered =
+        rawLines.length > 1 && rawLines.every((line) => numbered.hasMatch(line));
+
+    if (allNumbered) {
+      final stripNum = RegExp(r'^\d+\.\s*(.*)$');
+      return rawLines.map((line) {
+        final m = stripNum.firstMatch(line);
+        return (m != null ? m.group(1) ?? line : line);
+      }).toList();
+    }
+
+    final paragraph = rawLines.join(' ');
+    final sentenceEnd = RegExp(r'\.\s+(?=[A-Z])');
+    final sentences = paragraph.split(sentenceEnd).map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    return sentences.map((s) => s.endsWith('.') ? s : '$s.').toList();
+  }
+
+  InlineSpan _parseBoldSpans(String segment) {
+    final spans = <InlineSpan>[];
     final regex = RegExp(r'\*\*(.+?)\*\*');
     int lastEnd = 0;
-    for (final match in regex.allMatches(message)) {
+    for (final match in regex.allMatches(segment)) {
       if (match.start > lastEnd) {
-        parts.add(TextSpan(text: message.substring(lastEnd, match.start)));
+        spans.add(TextSpan(text: segment.substring(lastEnd, match.start)));
       }
-      parts.add(TextSpan(
+      spans.add(TextSpan(
         text: match.group(1),
         style: const TextStyle(
           color: AppColors.accent,
@@ -358,19 +439,47 @@ class _HomeScreenState extends State<HomeScreen> {
       ));
       lastEnd = match.end;
     }
-    if (lastEnd < message.length) {
-      parts.add(TextSpan(text: message.substring(lastEnd)));
+    if (lastEnd < segment.length) {
+      spans.add(TextSpan(text: segment.substring(lastEnd)));
     }
+    return spans.isEmpty ? TextSpan(text: segment) : TextSpan(children: spans);
+  }
 
-    return RichText(
-      text: TextSpan(
-        style: const TextStyle(
-          fontSize: 15,
-          color: AppColors.text,
-          height: 1.7,
-        ),
-        children: parts,
-      ),
+  Widget _buildSummaryMessage(String message) {
+    final items = _parseMessageItems(message);
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    // Web: .result-message-list — padding-left 1.35rem, decimal; li margin-bottom 0.5rem
+    const baseStyle = TextStyle(
+      fontSize: 15.8,
+      color: AppColors.text,
+      height: 1.7,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < items.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(left: 21.6, bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 20,
+                  child: Text('${i + 1}.', style: baseStyle),
+                ),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      style: baseStyle,
+                      children: [ _parseBoldSpans(items[i]) ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 
@@ -435,6 +544,8 @@ class _PrimaryButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
           onTap: onPressed,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),

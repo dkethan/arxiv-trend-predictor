@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme.dart';
 
 /// Matches the web app's .growth-card:
@@ -19,31 +20,25 @@ class GrowthCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      decoration: appCardDecoration.copyWith(
         gradient: const LinearGradient(
-          colors: [AppColors.surface, AppColors.surfaceElevated],
+          colors: [
+            Color(0xE612141C),
+            Color(0xE61C1F2A),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 24,
-            offset: Offset(0, 4),
-          ),
-        ],
       ),
       child: Wrap(
-        spacing: 14,
+        spacing: 16,
         runSpacing: 10,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          // Green pill badge
+          // Green pill badge (web: .growth-label)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: AppColors.successSoft,
               borderRadius: BorderRadius.circular(999),
@@ -52,26 +47,28 @@ class GrowthCard extends StatelessWidget {
               ),
             ),
             child: Text(
-              label,
+              label.isEmpty ? '—' : label,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: AppColors.success,
               ),
             ),
           ),
-          // Score text
+          // Score text (web: .growth-score-wrap / .growth-score-value)
           RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 15, color: AppColors.textMuted),
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textMuted,
+              ),
               children: [
                 const TextSpan(text: 'Growth score: '),
                 TextSpan(
                   text: pct,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 19.2,
                     fontWeight: FontWeight.w600,
-                    fontFamily: 'monospace',
                     color: AppColors.text,
                   ),
                 ),
