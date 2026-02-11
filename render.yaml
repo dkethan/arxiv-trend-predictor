@@ -10,7 +10,6 @@ services:
   - type: web
     name: arxiv-trend-predictor-web
     runtime: static
-    plan: free
     staticPublishPath: web_app
     headers:
       - path: /*
