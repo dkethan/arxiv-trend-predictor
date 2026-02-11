@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" data-api-base="https://arxiv-trend-predictor-api.onrender.com">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>arXiv Trend Advisor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <h1 class="title">arXiv Trend Advisor</h1>
+      <p class="tagline">See where your idea fits and how it trends on arXiv.</p>
+    </header>
+
+    <main class="main">
+      <form id="advise-form" class="form" novalidate>
+        <div class="field">
+          <label for="title">Title</label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            placeholder="e.g. Neural Radiance Fields for View Synthesis"
+            required
+            autocomplete="off"
+          />
+        </div>
+        <div class="field">
+          <label for="abstract">Abstract</label>
+          <textarea
+            id="abstract"
+            name="abstract"
+            rows="5"
+            placeholder="Optional: paste or type your abstract..."
+            autocomplete="off"
+          ></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" id="submit-btn" class="btn btn-primary">
+            Get advice
+          </button>
+          <span id="status" class="status" aria-live="polite"></span>
+        </div>
+      </form>
+
+      <section id="result" class="result hidden" aria-live="polite">
+        <div class="result-inner">
+          <h2 class="result-heading">Advice</h2>
+          <div id="viz-section" class="viz-section hidden">
+            <p class="viz-section-title">Insights</p>
+            <div class="charts-row">
+              <div class="chart-wrap chart-wrap-tall">
+                <canvas id="chart-confidence" aria-label="Domain confidence bar chart"></canvas>
+              </div>
+              <div class="chart-wrap chart-wrap-tall">
+                <canvas id="chart-growth" aria-label="Category growth gauge"></canvas>
+              </div>
+              <div class="chart-wrap scatter-wrap">
+                <canvas id="chart-scatter" aria-label="Confidence vs growth scatter"></canvas>
+              </div>
+            </div>
+            <div id="viz-numbers" class="viz-numbers" aria-live="polite"></div>
+          </div>
+          <div id="result-domain" class="card domain-card"></div>
+          <div id="result-growth" class="card growth-card"></div>
+          <div id="result-keywords" class="card keywords-card"></div>
+          <p id="result-message" class="result-message"></p>
+          <p id="result-disclaimer" class="disclaimer"></p>
+        </div>
+      </section>
+
+      <section id="error" class="error hidden" role="alert">
+        <p id="error-message"></p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Powered by <a href="https://arxiv-trend-predictor-api.onrender.com/docs" target="_blank" rel="noopener">arxiv-trend-predictor API</a></p>
+    </footer>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
