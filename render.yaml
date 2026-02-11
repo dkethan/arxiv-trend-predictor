@@ -6,3 +6,13 @@ services:
     buildCommand: pip install --upgrade pip && pip install --retries 5 --timeout 300 -r backend/requirements.txt
     startCommand: python -m backend.main
     healthCheckPath: /health
+
+  - type: web
+    name: arxiv-trend-predictor-web
+    runtime: static
+    plan: free
+    staticPublishPath: web_app
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600

@@ -1,6 +1,47 @@
-## web_app
+# arXiv Trend Advisor – Web App
 
-Placeholder for the future web UI that will call the `backend` API (e.g. `/api/v1/advisor/advise`).
+Static frontend for the [arxiv-trend-predictor](https://github.com/your-org/arxiv-trend-predictor) API. Enter a paper title (and optional abstract) to get domain classification, growth trend, and suggested keywords.
 
-- Framework: to be decided (e.g. React/Next.js).
-- This folder is currently empty on purpose; you can treat it as the root for the web frontend project.
+## Run locally
+
+Serve the files with any static server. Examples:
+
+**Python:**
+```bash
+cd web_app
+python -m http.server 8080
+```
+
+**Node (npx):**
+```bash
+cd web_app
+npx serve -l 8080
+```
+
+Then open **http://localhost:8080**. The app calls the live API at `https://arxiv-trend-predictor-api.onrender.com` by default.
+
+## Use a different API URL
+
+Set the base URL when serving the page by adding a `data-api-base` attribute on `<html>`:
+
+```html
+<html lang="en" data-api-base="http://localhost:8000">
+```
+
+Or run your backend on another host and point the attribute to that URL.
+
+## Deploy on Render
+
+Add a **Static Site** in the Render dashboard:
+
+- **Build Command:** leave empty (static files only)
+- **Publish Directory:** `web_app`
+- **Root Directory:** project root (or leave blank if `web_app` is the repo root)
+
+The frontend will call the API URL you deployed (e.g. `https://arxiv-trend-predictor-api.onrender.com`). No build step required.
+
+## Files
+
+- `index.html` – Form and result layout
+- `styles.css` – Layout and theme
+- `app.js` – Form submit, API call, result rendering
