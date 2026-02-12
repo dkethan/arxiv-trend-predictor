@@ -1,5 +1,7 @@
 ## research_pipeline
 
+This is the **research_pipeline** component (data collection, analysis, model training). All pipeline commands must be run from the **project root** (the folder that contains `research_pipeline/`, `backend/`, etc.). If you are inside `research_pipeline/`, go to the project root with: `cd ..`.
+
 Research pipeline for arxiv-trend-predictor: data collection, analysis, and model training.
 
 This package contains all the offline/experimental components:
@@ -11,7 +13,7 @@ This package contains all the offline/experimental components:
 
 ### Quick start
 
-All commands run from the **repo root**:
+All commands run from the **project root**:
 
 1. **Collect data**:
    ```bash

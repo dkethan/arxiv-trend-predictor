@@ -1,5 +1,7 @@
 ## arxiv-trend-predictor backend
 
+This is the **backend** (Web API) component. Commands to run the API are run from the **project root** (the folder that contains `backend/`, `web_app/`, etc.). If you are inside `backend/`, go to the project root with: `cd ..` (or `cd ../..` if you were in a subfolder of `backend`).
+
 FastAPI backend that serves the trained Idea Advisor model over HTTP.
 
 - **Does**: load models, expose `/health`, `/health/ready`, and `/api/v1/advisor/...` endpoints.
@@ -7,7 +9,7 @@ FastAPI backend that serves the trained Idea Advisor model over HTTP.
 
 ### Run the API server
 
-From the repo root (after installing dependencies):
+From the project root (after installing dependencies):
 
 ```bash
 python -m backend.main
