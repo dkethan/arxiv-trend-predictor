@@ -6,8 +6,10 @@ Idea Advisor and analysis tools for arXiv tech papers (scraper, analysis, model 
 
 - `backend/` – FastAPI service that serves the trained model and exposes HTTP APIs
 - `research_pipeline/` – scraping, analysis, and training pipeline
-- `web_app/` – future web client, will consume the backend API
-- `mobile_app/` – future mobile client, will consume the backend API
+- `web_app/` – web client that consumes the backend API
+- `mobile_app/` – mobile client that consumes the backend API
+
+The **project root** is the folder that contains `backend/`, `web_app/`, `mobile_app/`, and `research_pipeline/`. All commands in this README and in the linked READMEs assume you are in the project root unless they say otherwise. If you are in a subfolder, go to the project root with `cd ..` (repeat if needed) or `cd /path/to/arxiv-trend-predictor-001`.
 
 ---
 
@@ -119,16 +121,16 @@ curl -X POST http://$API_HOST:$API_PORT/api/v1/advisor/advise \
 
 ---
 
-### Step 4: Build web and mobile clients (future)
+### Step 4: Run the web app and mobile app
 
-**What to do:** Build UI clients that call the backend API.
+**What to do:** Run the web or mobile clients that call the backend API.
 
 **How to do it:**
 
 - For web app: See [web_app/README.md](web_app/README.md)
 - For mobile app: See [mobile_app/README.md](mobile_app/README.md)
 
-Both will consume the backend API endpoints (mainly `/api/v1/advisor/advise`).
+Both consume the backend API endpoints (mainly `/api/v1/advisor/advise`).
 
 ---
 
@@ -137,5 +139,5 @@ Both will consume the backend API endpoints (mainly `/api/v1/advisor/advise`).
 - [backend/README.md](backend/README.md) – Backend API documentation
 - [backend/MODEL_USAGE.md](backend/MODEL_USAGE.md) – Detailed model usage guide
 - [research_pipeline/README.md](research_pipeline/README.md) – Research pipeline overview
-- [web_app/README.md](web_app/README.md) – Web app (future)
-- [mobile_app/README.md](mobile_app/README.md) – Mobile app (future)
+- [web_app/README.md](web_app/README.md) – Web app
+- [mobile_app/README.md](mobile_app/README.md) – Mobile app

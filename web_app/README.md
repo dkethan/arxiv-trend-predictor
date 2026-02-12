@@ -1,24 +1,25 @@
 # arXiv Trend Advisor – Web App
 
-Static frontend for the [arxiv-trend-predictor](https://github.com/your-org/arxiv-trend-predictor) API. Enter a paper title (and optional abstract) to get domain classification, growth trend, and suggested keywords.
+This is the **web app** component. To run it, you need to serve the files from this folder. From the **project root**, go here with: `cd web_app`.
+
+Static frontend for the arxiv-trend-predictor API. Enter a paper title (and optional abstract) to get domain classification, growth trend, and suggested keywords.
 
 ## Run locally
 
-Serve the files with any static server. Examples:
+1. From the **project root**, go to the web app folder: `cd web_app`
+2. Serve the files with any static server. Examples:
 
-**Python:**
-```bash
-cd web_app
-python -m http.server 8080
-```
+   **Python:**
+   ```bash
+   python -m http.server 8080
+   ```
 
-**Node (npx):**
-```bash
-cd web_app
-npx serve -l 8080
-```
+   **Node (npx):**
+   ```bash
+   npx serve -l 8080
+   ```
 
-Then open **http://localhost:8080**. The app calls the live API at `https://arxiv-trend-predictor-api.onrender.com` by default.
+3. Open **http://localhost:8080** in your browser. The app calls the live API at `https://arxiv-trend-predictor-api.onrender.com` by default.
 
 ## Use a different API URL
 
