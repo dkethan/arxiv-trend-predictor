@@ -1,35 +1,56 @@
 from typing import Any, Dict
 
-from research_pipeline.advisor.idea_advisor import advise_idea, train_domain_classifier, load_domain_model
+from research_pipeline.advisor.idea_advisor import (
+    advise_idea,
+    load_model,
+    get_all_domains,
+    get_all_trends,
+    get_model_info,
+)
 from backend.logger import get_logger
 
 logger = get_logger(__name__)
 
 
-def ensure_model_trained() -> Dict[str, Any]:
+def get_stats() -> Dict[str, Any]:
     """
-    Ensure the domain model is trained.
-    If model files are missing, trains a new model and returns metrics.
-    If present, returns a simple status dict.
+    Get comprehensive model statistics and metadata.
+    Returns all model information including domains, metrics, and temporal trends.
     """
-    vectorizer, classifier = load_domain_model()
-    if vectorizer is not None and classifier is not None:
-        return {"trained": True, "just_trained": False}
+    try:
+        # Load model to verify it exists
+        model, vectorizer, mlb, trends, meta = load_model()
 
-    logger.info("Domain model not found; training a new model …")
-    metrics = train_domain_classifier()
-    return {
-        "trained": True,
-        "just_trained": True,
-        "accuracy": metrics.get("accuracy"),
-        "macro_f1": metrics.get("macro_f1"),
-    }
+        # Return comprehensive stats
+        return {
+            "model_loaded": True,
+            "model_type": meta.get("model"),
+            "classification_type": meta.get("classification_type"),
+            "n_classes": meta.get("n_classes"),
+            "available_domains": meta.get("classes", []),
+            "metrics": meta.get("metrics", {}),
+            "temporal_trends": trends,
+        }
+    except Exception as e:
+        logger.error("Failed to load model stats: {}", str(e))
+        raise
 
 
 def advise(title: str, abstract: str) -> Dict[str, Any]:
     """
-    Invoke the Idea Advisor for a given title + abstract.
-    Assumes the model has already been trained.
-    """
-    return advise_idea(title, abstract)
+    Invoke the Idea Advisor with comprehensive output.
+    Requires both title and abstract to be non-empty.
 
+    Returns:
+        - primary_domain: Main predicted tech domain
+        - all_domains: All predicted domains (multi-label)
+        - domain_confidence: Confidence scores for each domain
+        - growth_info: Temporal trends for predicted domains
+        - model_info: Model performance metrics
+    """
+    if not title or not title.strip():
+        raise ValueError("Title is required and cannot be empty")
+    if not abstract or not abstract.strip():
+        raise ValueError("Abstract is required and cannot be empty")
+
+    return advise_idea(title, abstract)

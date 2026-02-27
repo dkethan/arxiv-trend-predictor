@@ -1,0 +1,120 @@
+/opt/anaconda3/envs/arxiv-trend-predictor-001/bin/python /Users/kethandosapati/Developer/personal/arxiv-trend-predictor-001/research_pipeline/advisor/idea_advisor.py
+2026-02-26 21:36:18.651 | INFO     | __main__:run_training_and_validate:906 - ============================================================
+2026-02-26 21:36:18.651 | INFO     | __main__:run_training_and_validate:907 -   ARXIV IDEA ADVISOR — TRAINING PIPELINE (v3)
+2026-02-26 21:36:18.651 | INFO     | __main__:run_training_and_validate:908 - ============================================================
+2026-02-26 21:36:18.651 | INFO     | __main__:train_domain_classifier:494 - Training on /Users/kethandosapati/Developer/personal/arxiv-trend-predictor-001/data/arxiv_data/arxiv_tech_papers_20260210_161210.csv
+2026-02-26 21:36:19.013 | INFO     | __main__:train_domain_classifier:498 - Dataset: 36965 papers, 21 domains
+2026-02-26 21:36:19.340 | INFO     | __main__:train_domain_classifier:505 - Multi-label: avg 1.00 labels/paper, 21 unique domains
+2026-02-26 21:36:19.355 | INFO     | __main__:train_domain_classifier:517 - Train: 29572 | Test: 7393
+2026-02-26 21:36:19.355 | INFO     | __main__:train_domain_classifier:522 - ==================================================
+2026-02-26 21:36:19.355 | INFO     | __main__:train_domain_classifier:523 - TF-IDF EMBEDDINGS
+2026-02-26 21:36:19.355 | INFO     | __main__:train_domain_classifier:524 - ==================================================
+2026-02-26 21:36:25.277 | INFO     | __main__:benchmark_classifiers:341 -   Training tfidf__LogisticRegression …
+2026-02-26 21:36:31.086 | INFO     | __main__:benchmark_classifiers:363 - tfidf__LogisticRegression | CV micro-F1: 0.5804+-0.0023 | Test macro-F1: 0.5977 | Hamming: 0.0559 | Subset acc: 0.2853
+2026-02-26 21:36:31.086 | INFO     | __main__:benchmark_classifiers:341 -   Training tfidf__LinearSVC …
+/opt/anaconda3/envs/arxiv-trend-predictor-001/lib/python3.13/site-packages/joblib/externals/loky/process_executor.py:782: UserWarning: A worker stopped while some jobs were given to the executor. This can be caused by a too short worker timeout or by a memory leak.
+  warnings.warn(
+2026-02-26 21:36:46.803 | INFO     | __main__:benchmark_classifiers:363 - tfidf__LinearSVC | CV micro-F1: 0.5485+-0.0026 | Test macro-F1: 0.5436 | Hamming: 0.0331 | Subset acc: 0.4128
+2026-02-26 21:36:46.803 | INFO     | __main__:benchmark_classifiers:341 -   Training tfidf__RandomForest …
+2026-02-26 21:39:31.088 | INFO     | __main__:benchmark_classifiers:363 - tfidf__RandomForest | CV micro-F1: 0.2800+-0.0036 | Test macro-F1: 0.2730 | Hamming: 0.0406 | Subset acc: 0.1773
+2026-02-26 21:39:31.088 | INFO     | __main__:benchmark_classifiers:341 -   Training tfidf__MLP …
+/opt/anaconda3/envs/arxiv-trend-predictor-001/lib/python3.13/site-packages/joblib/externals/loky/process_executor.py:782: UserWarning: A worker stopped while some jobs were given to the executor. This can be caused by a too short worker timeout or by a memory leak.
+  warnings.warn(
+2026-02-26 22:08:13.856 | INFO     | __main__:benchmark_classifiers:363 - tfidf__MLP | CV micro-F1: 0.5648+-0.0078 | Test macro-F1: 0.5647 | Hamming: 0.0338 | Subset acc: 0.4447
+2026-02-26 22:08:13.858 | INFO     | __main__:train_domain_classifier:537 - ==================================================
+2026-02-26 22:08:13.859 | INFO     | __main__:train_domain_classifier:538 - SciBERT EMBEDDINGS (allenai/scibert_scivocab_uncased)
+2026-02-26 22:08:13.859 | INFO     | __main__:train_domain_classifier:539 - ==================================================
+2026-02-26 22:08:13.859 | INFO     | __main__:_scibert_embeddings:230 - Loading SentenceTransformer: allenai/scibert_scivocab_uncased
+No sentence-transformers model found with name allenai/scibert_scivocab_uncased. Creating a new one with mean pooling.
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 21080.63it/s, Materializing param=pooler.dense.weight]
+BertModel LOAD REPORT from: allenai/scibert_scivocab_uncased
+Key                                        | Status     |  |
+-------------------------------------------+------------+--+-
+cls.predictions.transform.dense.weight     | UNEXPECTED |  |
+cls.predictions.transform.LayerNorm.weight | UNEXPECTED |  |
+cls.seq_relationship.bias                  | UNEXPECTED |  |
+cls.seq_relationship.weight                | UNEXPECTED |  |
+cls.predictions.transform.LayerNorm.bias   | UNEXPECTED |  |
+cls.predictions.transform.dense.bias       | UNEXPECTED |  |
+cls.predictions.decoder.bias               | UNEXPECTED |  |
+cls.predictions.decoder.weight             | UNEXPECTED |  |
+cls.predictions.bias                       | UNEXPECTED |  |
+
+Notes:
+- UNEXPECTED	:can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+2026-02-26 22:08:24.783 | INFO     | __main__:_scibert_embeddings:232 - Encoding train (29572 docs) …
+Batches: 100%|██████████| 463/463 [06:38<00:00,  1.16it/s]
+2026-02-26 22:15:03.571 | INFO     | __main__:_scibert_embeddings:234 - Encoding test (7393 docs) …
+Batches: 100%|██████████| 116/116 [01:49<00:00,  1.05it/s]
+2026-02-26 22:16:53.765 | INFO     | __main__:benchmark_classifiers:341 -   Training scibert__LogisticRegression …
+2026-02-26 22:19:06.103 | INFO     | __main__:benchmark_classifiers:363 - scibert__LogisticRegression | CV micro-F1: 0.4877+-0.0028 | Test macro-F1: 0.5098 | Hamming: 0.0851 | Subset acc: 0.1351
+2026-02-26 22:19:06.103 | INFO     | __main__:benchmark_classifiers:341 -   Training scibert__LinearSVC …
+python(2396) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2397) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2398) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2399) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2400) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2401) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2402) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2403) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2404) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2405) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2406) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2407) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2408) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2409) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-02-26 22:27:58.800 | INFO     | __main__:benchmark_classifiers:363 - scibert__LinearSVC | CV micro-F1: 0.4458+-0.0013 | Test macro-F1: 0.4705 | Hamming: 0.0361 | Subset acc: 0.3394
+2026-02-26 22:27:58.802 | INFO     | __main__:benchmark_classifiers:341 -   Training scibert__RandomForest …
+python(2621) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2622) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2623) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2624) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2625) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2626) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2627) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2628) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2629) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2630) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2631) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2632) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2633) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+/opt/anaconda3/envs/arxiv-trend-predictor-001/lib/python3.13/site-packages/joblib/externals/loky/process_executor.py:782: UserWarning: A worker stopped while some jobs were given to the executor. This can be caused by a too short worker timeout or by a memory leak.
+  warnings.warn(
+python(2634) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-02-26 22:39:51.728 | INFO     | __main__:benchmark_classifiers:363 - scibert__RandomForest | CV micro-F1: 0.2623+-0.0055 | Test macro-F1: 0.2699 | Hamming: 0.0416 | Subset acc: 0.1629
+2026-02-26 22:39:51.728 | INFO     | __main__:benchmark_classifiers:341 -   Training scibert__MLP …
+python(2730) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2731) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2732) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2733) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+python(2734) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+2026-02-26 22:41:23.809 | INFO     | __main__:benchmark_classifiers:363 - scibert__MLP | CV micro-F1: 0.5821+-0.0054 | Test macro-F1: 0.5699 | Hamming: 0.0329 | Subset acc: 0.4553
+2026-02-26 22:41:23.812 | INFO     | __main__:train_domain_classifier:557 -
+*** BEST: tfidf__LogisticRegression | samples-F1: 0.6074 | macro-F1: 0.5977 | hamming: 0.0559 ***
+2026-02-26 22:41:23.812 | INFO     | __main__:train_domain_classifier:565 - Computing temporal trends …
+2026-02-26 22:41:24.591 | INFO     | __main__:train_domain_classifier:569 -
+===============================================================================================
+2026-02-26 22:41:24.591 | INFO     | __main__:train_domain_classifier:570 - Model                              CV uF1  CV uF1+/- Test macF1 Test smpF1    Hamming
+2026-02-26 22:41:24.591 | INFO     | __main__:train_domain_classifier:572 - -----------------------------------------------------------------------------------------------
+2026-02-26 22:41:24.591 | INFO     | __main__:train_domain_classifier:574 - tfidf__LogisticRegression          0.5804     0.0023     0.5977     0.6074     0.0559
+2026-02-26 22:41:24.591 | INFO     | __main__:train_domain_classifier:574 - scibert__LogisticRegression        0.4877     0.0028     0.5098     0.5293     0.0851
+2026-02-26 22:41:24.591 | INFO     | __main__:train_domain_classifier:574 - tfidf__MLP                         0.5648     0.0078     0.5647     0.4821     0.0338
+2026-02-26 22:41:24.591 | INFO     | __main__:train_domain_classifier:574 - scibert__MLP                       0.5821     0.0054     0.5699     0.4722     0.0329
+2026-02-26 22:41:24.591 | INFO     | __main__:train_domain_classifier:574 - tfidf__LinearSVC                   0.5485     0.0026     0.5436     0.4288     0.0331
+2026-02-26 22:41:24.591 | INFO     | __main__:train_domain_classifier:574 - scibert__LinearSVC                 0.4458     0.0013     0.4705     0.3492     0.0361
+2026-02-26 22:41:24.592 | INFO     | __main__:train_domain_classifier:574 - tfidf__RandomForest                0.2800     0.0036     0.2730     0.1790     0.0406
+2026-02-26 22:41:24.592 | INFO     | __main__:train_domain_classifier:574 - scibert__RandomForest              0.2623     0.0055     0.2699     0.1675     0.0416
+2026-02-26 22:41:24.592 | INFO     | __main__:train_domain_classifier:577 - ===============================================================================================
+2026-02-26 22:41:24.739 | INFO     | __main__:_save_artifacts:653 - All artifacts saved to /Users/kethandosapati/Developer/personal/arxiv-trend-predictor-001/backend/models
+2026-02-26 22:41:25.143 | INFO     | __main__:run_training_and_validate:910 -
+Best: tfidf__LogisticRegression (samples-F1=0.6074)
+2026-02-26 22:41:25.628 | INFO     | __main__:run_training_and_validate:917 -
+--- Sample Advice ---
+1. **Primary domain**: Artificial Intelligence (confidence: 0.854)
+2. **All predicted domains**: Artificial Intelligence, Neural Networks & Evolutionary
+3. **Trend**: high growth (score: 0.99, YoY: +0.0%, R2: 0.501). Projected papers/month (next 3): [63, 64, 64].
+4. **Interdisciplinarity**: avg 2.3 categories/paper in this domain.
+5. **Suggested keywords**: learning, logic, knowledge, reasoning
+6. **Model**: tfidf__LogisticRegression (samples-F1: 0.607)
+
+Process finished with exit code 0
