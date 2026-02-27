@@ -5,7 +5,7 @@ services:
     plan: free
     branch: feature/render-01
     buildCommand: pip install --upgrade pip && pip install --retries 5 --timeout 300 -r backend/requirements.txt
-    startCommand: python -m backend.main
+    startCommand: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
 
   - type: web

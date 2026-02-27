@@ -18,8 +18,8 @@ def get_stats() -> Dict[str, Any]:
     Returns all model information including domains, metrics, and temporal trends.
     """
     try:
-        # Load model to verify it exists
-        model, vectorizer, mlb, trends, meta = load_model()
+        # Load model to verify it exists (ignore thresholds)
+        model, vectorizer, mlb, trends, meta, thresholds = load_model()
 
         # Return comprehensive stats
         return {
