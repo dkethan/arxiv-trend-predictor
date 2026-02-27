@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-api-base="https://arxiv-trend-predictor-api.onrender.com">
+<html lang="en" data-api-base="http://localhost:60000">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,11 +42,11 @@
           <button type="submit" id="submit-btn" class="btn btn-primary">
             Get advice
           </button>
-          <button type="button" class="btn btn-example" data-example="1">Ex 1 — Transformers</button>
-          <button type="button" class="btn btn-example" data-example="2">Ex 2 — NeRF</button>
+          <button type="button" class="btn btn-example" data-example="1">Eg 1 — Transformers</button>
+          <button type="button" class="btn btn-example" data-example="2">Eg 2 — NeRF</button>
         </div>
       </form>
-      <p class="form-note">Click <strong>Get advice</strong> to get advice. Click <strong>Ex 1 — Transformers</strong> or <strong>Ex 2 — NeRF</strong> to fill the title and abstract automatically with an example.</p>
+      <p class="form-note">Click <strong>Get advice</strong> to get advice. Click <strong>Eg 1 — Transformers</strong> or <strong>Eg 2 — NeRF</strong> to fill the title and abstract automatically with an example.</p>
       <p id="status" class="status status-below-note" aria-live="polite"></p>
 
       <section id="result" class="result hidden" aria-live="polite">
@@ -69,7 +69,7 @@
           </div>
           <div id="result-domain" class="card domain-card"></div>
           <div id="result-growth" class="card growth-card"></div>
-          <div id="result-keywords" class="card keywords-card"></div>
+          <div id="result-model-info" class="card model-info-card"></div>
           <div id="result-message-wrap" class="card result-message-card">
             <p class="result-message-card-title">Summary</p>
             <div id="result-message" class="result-message" aria-live="polite"></div>

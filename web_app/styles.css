@@ -384,7 +384,7 @@ body::after {
 .result-inner .viz-numbers { animation: fadeUp 0.5s ease 0.08s backwards; }
 .result-inner .domain-card { animation-delay: 0.12s; }
 .result-inner .growth-card { animation-delay: 0.19s; }
-.result-inner .keywords-card { animation-delay: 0.26s; }
+.result-inner .model-info-card { animation-delay: 0.23s; }
 .result-inner .result-message-card { animation-delay: 0.33s; }
 .result-inner .disclaimer { animation-delay: 0.4s; }
 
@@ -471,73 +471,106 @@ body::after {
 }
 
 .domain-card .alternate-list li span.alternate-conf,
+.domain-card .alternate-list li span.alternate-growth,
 .domain-card .alternate-list li span:last-child {
   font-family: var(--font-mono);
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--text);
+  min-width: 4rem;
+  text-align: right;
 }
 
-/* Growth card – badge + big number */
+.domain-card .alternate-list li span:first-child {
+  flex: 1;
+}
+
+/* Growth card – badge + metrics grid */
 .growth-card {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.85rem;
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 100%);
 }
 
 .growth-card .growth-label {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: var(--success);
   margin: 0;
   padding: 0.35rem 0.75rem;
   background: var(--success-soft);
   border-radius: 999px;
   border: 1px solid rgba(52, 211, 153, 0.25);
+  align-self: center;
+}
+
+.growth-metrics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
 }
 
 .growth-card .growth-score-wrap {
-  font-size: 0.9375rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
   margin: 0;
+  padding: 0.6rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .growth-card .growth-score-value {
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text);
-  margin-left: 0.25rem;
+  display: block;
+  margin-top: 0.2rem;
 }
 
-/* Keywords – pill with soft accent */
-.keywords-card .keywords-list {
-  display: flex;
-  flex-wrap: wrap;
+/* Model Info card */
+.model-info-card {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 100%);
+}
+
+.model-info-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.model-metrics-table {
+  display: grid;
   gap: 0.5rem;
+}
+
+.model-metric-row {
+  font-size: 0.9rem;
+  color: var(--text-muted);
   margin: 0;
-  padding: 0;
-  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-.keywords-card .keywords-list li {
-  background: var(--accent-soft);
-  color: var(--accent);
+.model-metric-row:last-child {
+  border-bottom: none;
+}
+
+.model-metric-value {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 0.4rem 0.85rem;
-  border-radius: 999px;
-  border: 1px solid rgba(46, 196, 182, 0.3);
-  transition: background 0.2s ease, transform 0.15s ease;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
-.keywords-card .keywords-list li:hover {
-  background: rgba(46, 196, 182, 0.25);
-  transform: translateY(-1px);
-}
 
 /* Summary card (advice message as numbered points) */
 .result-message-card {

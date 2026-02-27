@@ -1,0 +1,37 @@
+{
+  "model": "TF-IDF + LogisticRegression",
+  "classification_type": "multi-label",
+  "metrics": {
+    "subset_accuracy": 0.28526984985797377,
+    "hamming_loss": 0.055934506901637975,
+    "macro_f1": 0.5977499022079084,
+    "micro_f1": 0.5809284818067754,
+    "samples_f1": 0.6074124171513594,
+    "cv_micro_f1_mean": 0.5813257838095396,
+    "cv_micro_f1_std": 0.002074678246580048
+  },
+  "n_classes": 21,
+  "classes": [
+    "Artificial Intelligence",
+    "Computational Complexity",
+    "Computer Vision",
+    "Computers & Society",
+    "Cryptography & Security",
+    "Data Structures & Algorithms",
+    "Databases",
+    "Distributed Computing",
+    "Game Theory",
+    "Graphics",
+    "Hardware Architecture",
+    "Human-Computer Interaction",
+    "Information Retrieval",
+    "Machine Learning",
+    "Natural Language Processing",
+    "Networking",
+    "Neural Networks & Evolutionary",
+    "Operating Systems",
+    "Programming Languages",
+    "Robotics",
+    "Software Engineering"
+  ]
+}
