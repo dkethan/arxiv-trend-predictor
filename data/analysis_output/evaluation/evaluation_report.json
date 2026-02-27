@@ -1,0 +1,134 @@
+{
+  "best_model": {
+    "tag": "tfidf__LogisticRegression",
+    "samples_f1": 0.6074124171513594,
+    "macro_f1": 0.5977499022079084,
+    "hamming_loss": 0.055934506901637975,
+    "cv_micro_f1": "0.5804 +/- 0.0023"
+  },
+  "embedding_comparison": {
+    "tfidf_best": {
+      "tag": "tfidf__LogisticRegression",
+      "samples_f1": 0.6074124171513594
+    },
+    "scibert_best": {
+      "tag": "scibert__LogisticRegression",
+      "samples_f1": 0.5293467222318838
+    }
+  },
+  "classification_type": "multi-label",
+  "n_models_benchmarked": 8,
+  "hardest_domains": [
+    [
+      "Machine Learning",
+      0.3618
+    ],
+    [
+      "Artificial Intelligence",
+      0.3692
+    ],
+    [
+      "Computers & Society",
+      0.4896
+    ]
+  ],
+  "easiest_domains": [
+    [
+      "Robotics",
+      0.7148
+    ],
+    [
+      "Hardware Architecture",
+      0.7411
+    ],
+    [
+      "Game Theory",
+      0.7421
+    ]
+  ],
+  "top_growing_domains": [
+    {
+      "domain": "Networking",
+      "growth_score": 1.0,
+      "yoy_pct": 1.2
+    },
+    {
+      "domain": "Artificial Intelligence",
+      "growth_score": 0.9897,
+      "yoy_pct": 0.0
+    },
+    {
+      "domain": "Data Structures & Algorithms",
+      "growth_score": 0.8819,
+      "yoy_pct": -2.04
+    },
+    {
+      "domain": "Cryptography & Security",
+      "growth_score": 0.706,
+      "yoy_pct": -1.27
+    },
+    {
+      "domain": "Computer Vision",
+      "growth_score": 0.6757,
+      "yoy_pct": 46.0
+    }
+  ],
+  "all_model_rankings": [
+    {
+      "rank": 1,
+      "tag": "tfidf__LogisticRegression",
+      "samples_f1": 0.6074,
+      "macro_f1": 0.5977,
+      "hamming": 0.0559
+    },
+    {
+      "rank": 2,
+      "tag": "scibert__LogisticRegression",
+      "samples_f1": 0.5293,
+      "macro_f1": 0.5098,
+      "hamming": 0.0851
+    },
+    {
+      "rank": 3,
+      "tag": "tfidf__MLP",
+      "samples_f1": 0.4821,
+      "macro_f1": 0.5647,
+      "hamming": 0.0338
+    },
+    {
+      "rank": 4,
+      "tag": "scibert__MLP",
+      "samples_f1": 0.4722,
+      "macro_f1": 0.5699,
+      "hamming": 0.0329
+    },
+    {
+      "rank": 5,
+      "tag": "tfidf__LinearSVC",
+      "samples_f1": 0.4288,
+      "macro_f1": 0.5436,
+      "hamming": 0.0331
+    },
+    {
+      "rank": 6,
+      "tag": "scibert__LinearSVC",
+      "samples_f1": 0.3492,
+      "macro_f1": 0.4705,
+      "hamming": 0.0361
+    },
+    {
+      "rank": 7,
+      "tag": "tfidf__RandomForest",
+      "samples_f1": 0.179,
+      "macro_f1": 0.273,
+      "hamming": 0.0406
+    },
+    {
+      "rank": 8,
+      "tag": "scibert__RandomForest",
+      "samples_f1": 0.1675,
+      "macro_f1": 0.2699,
+      "hamming": 0.0416
+    }
+  ]
+}
