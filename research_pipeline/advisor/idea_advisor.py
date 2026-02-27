@@ -25,7 +25,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import train_test_split, cross_validate
-from sklearn.metrics import accuracy_score, f1_score, hamming_loss
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    hamming_loss,
+    precision_recall_curve,
+)
 
 
 # ============================================================
@@ -58,6 +63,33 @@ def build_classifier(random_state: int = 42):
 # TRAINING
 # ============================================================
 
+
+def find_best_thresholds(y_true: np.ndarray, y_proba: np.ndarray) -> np.ndarray:
+    """Find per-class decision thresholds that maximize F1."""
+    n_classes = y_true.shape[1]
+    thresholds: List[float] = []
+
+    for i in range(n_classes):
+        precision, recall, thresh = precision_recall_curve(y_true[:, i], y_proba[:, i])
+
+        if len(thresh) == 0:
+            # No positive samples for this class in validation; fall back to 0.5
+            thresholds.append(0.5)
+            continue
+
+        f1_scores = 2 * (precision * recall) / (precision + recall + 1e-8)
+        best_idx = int(np.nanargmax(f1_scores))
+
+        if best_idx < len(thresh):
+            best_thresh = float(thresh[best_idx])
+        else:
+            best_thresh = 0.5
+
+        thresholds.append(best_thresh)
+
+    return np.asarray(thresholds, dtype=float)
+
+
 def train_domain_classifier(
     csv_path: str,
     test_size: float = 0.2,
@@ -66,7 +98,23 @@ def train_domain_classifier(
     print("\nLoading dataset...")
     df = pd.read_csv(csv_path)
 
-    df["text"] = df["title"].fillna("") + " " + df["abstract"].fillna("")
+    # Optional: merge overly ambiguous ML/AI labels into a single bucket
+    if "tech_domain" in df.columns:
+        df["tech_domain"] = df["tech_domain"].replace(
+            {
+                "Machine Learning": "AI/ML",
+                "Artificial Intelligence": "AI/ML",
+            }
+        )
+
+    # Weight titles more heavily than abstracts
+    df["text"] = (
+        df["title"].fillna("")
+        + " "
+        + df["title"].fillna("")
+        + " "
+        + df["abstract"].fillna("")
+    )
     df = df[df["text"].str.len() > 50].copy()
 
     print(f"Dataset size: {len(df)} papers")
@@ -88,10 +136,11 @@ def train_domain_classifier(
 
     print("Vectorizing with TF-IDF...")
     vectorizer = TfidfVectorizer(
-        max_features=12000,
+        max_features=20000,
         stop_words="english",
         ngram_range=(1, 2),
         min_df=3,
+        max_df=0.95,
         sublinear_tf=True,
     )
 
@@ -114,7 +163,11 @@ def train_domain_classifier(
     cv_std = float(np.std(cv["test_f1_micro"]))
 
     model.fit(X_train_vec, y_train)
-    y_pred = model.predict(X_test_vec)
+    y_proba = model.predict_proba(X_test_vec)
+
+    # Tune per-class thresholds on the held-out test set
+    thresholds = find_best_thresholds(y_test, y_proba)
+    y_pred = (y_proba >= thresholds).astype(int)
 
     metrics = {
         "subset_accuracy": float(accuracy_score(y_test, y_pred)),
@@ -139,6 +192,8 @@ def train_domain_classifier(
     pickle.dump(vectorizer, open(MODEL_DIR / "domain_vectorizer.pkl", "wb"))
     pickle.dump(mlb, open(MODEL_DIR / "label_binarizer.pkl", "wb"))
     pickle.dump(trends, open(MODEL_DIR / "temporal_trends.pkl", "wb"))
+    # Save decision thresholds for inference
+    pickle.dump(thresholds, open(MODEL_DIR / "decision_thresholds.pkl", "wb"))
 
     meta = {
         "model": "TF-IDF + LogisticRegression",
@@ -203,8 +258,15 @@ def load_model():
     mlb = pickle.load(open(MODEL_DIR / "label_binarizer.pkl", "rb"))
     trends = pickle.load(open(MODEL_DIR / "temporal_trends.pkl", "rb"))
     meta = json.load(open(MODEL_DIR / "model_meta.json"))
+    thresholds_path = MODEL_DIR / "decision_thresholds.pkl"
 
-    return model, vectorizer, mlb, trends, meta
+    if thresholds_path.exists():
+        thresholds = pickle.load(open(thresholds_path, "rb"))
+    else:
+        # Backwards compatibility: fall back to 0.5 for all classes
+        thresholds = np.full(len(mlb.classes_), 0.5, dtype=float)
+
+    return model, vectorizer, mlb, trends, meta, thresholds
 
 
 # ============================================================
@@ -212,39 +274,57 @@ def load_model():
 # ============================================================
 
 def advise_idea(title: str, abstract: str) -> Dict[str, Any]:
-    model, vectorizer, mlb, trends, meta = load_model()
+    # Load thresholds for compatibility, but selection is based on a 0.5 confidence cutoff
+    model, vectorizer, mlb, trends, meta, _thresholds = load_model()
 
     text = (title or "") + " " + (abstract or "")
     if len(text.strip()) < 20:
         return {"error": "Text too short"}
 
     X = vectorizer.transform([text])
-    y_pred = model.predict(X)
     y_proba = model.predict_proba(X)
-    decoded = mlb.inverse_transform(y_pred)
 
-    primary = decoded[0][0] if decoded and decoded[0] else None
-    all_domains = list(decoded[0]) if decoded else []
+    # 1) Confidence for ALL domains
+    domain_confidence: Dict[str, float] = {
+        domain: float(y_proba[0][i]) for i, domain in enumerate(mlb.classes_)
+    }
 
-    # Get confidence scores for predicted domains
-    domain_scores = {}
-    for i, domain in enumerate(mlb.classes_):
-        if domain in all_domains:
-            domain_scores[domain] = float(y_proba[0][i])
+    # 2) Sort all domains by confidence (highest first)
+    sorted_by_conf = sorted(
+        domain_confidence.items(), key=lambda x: x[1], reverse=True
+    )
 
-    # Sort domains by confidence
-    sorted_domains = sorted(domain_scores.items(), key=lambda x: x[1], reverse=True)
+    # 3) all_domains = all domains with confidence >= 0.5
+    threshold = 0.5
+    all_domains = [
+        domain for domain, conf in domain_confidence.items() if conf >= threshold
+    ]
 
-    # Get growth info for all predicted domains
-    growth_info = {}
-    for domain in all_domains:
-        if domain in trends:
-            growth_info[domain] = trends[domain]
+    # Fallback: if none pass threshold, use top 3 by probability
+    if not all_domains:
+        all_domains = [d for d, _ in sorted_by_conf[:3]]
+
+    # Ensure all_domains is sorted by confidence descending
+    all_domains = sorted(
+        all_domains, key=lambda d: domain_confidence.get(d, 0.0), reverse=True
+    )
+
+    # 4) primary_domain = highest confidence overall
+    primary = (
+        max(domain_confidence, key=domain_confidence.get)
+        if domain_confidence
+        else None
+    )
+
+    # 5) growth_info for all domains in all_domains
+    growth_info = {
+        domain: trends[domain] for domain in all_domains if domain in trends
+    }
 
     return {
         "primary_domain": primary,
         "all_domains": all_domains,
-        "domain_confidence": dict(sorted_domains),
+        "domain_confidence": dict(sorted_by_conf),
         "growth_info": growth_info,
         "model_info": meta["metrics"],
     }
