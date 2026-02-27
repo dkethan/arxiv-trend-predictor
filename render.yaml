@@ -3,6 +3,7 @@ services:
     name: arxiv-trend-predictor-api
     runtime: python
     plan: free
+    branch: feature/render-01
     buildCommand: pip install --upgrade pip && pip install --retries 5 --timeout 300 -r backend/requirements.txt
     startCommand: python -m backend.main
     healthCheckPath: /health
@@ -10,6 +11,7 @@ services:
   - type: web
     name: arxiv-trend-predictor-web
     runtime: static
+    branch: feature/render-01
     staticPublishPath: web_app
     headers:
       - path: /*
