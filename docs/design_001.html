@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>System Architecture — arXiv Trend Predictor</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 40px 50px;
+    color: #111;
+  }
+  @media print {
+    body { padding: 10px 16px; }
+    .btn-bar { display: none; }
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  .fig-num {
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-family: 'Times New Roman', Times, serif;
+  }
+  .fig-cap {
+    text-align: center;
+    font-size: 12px;
+    color: #444;
+    font-style: italic;
+    font-family: 'Times New Roman', Times, serif;
+    margin-bottom: 22px;
+  }
+  svg { display: block; width: 100%; }
+  .btn-bar { text-align: center; margin-top: 20px; }
+  button {
+    font-size: 12px;
+    padding: 7px 18px;
+    border: 1px solid #999;
+    background: #f3f3f3;
+    border-radius: 3px;
+    cursor: pointer;
+    margin: 0 5px;
+  }
+  button:hover { background: #e3e3e3; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="fig-num">Fig. 1. arXiv Trend Predictor — System Architecture</div>
+  <div class="fig-cap">Architecture overview: offline research pipeline, model storage, REST API backend, and client interfaces.</div>
+
+  <svg id="diag" viewBox="0 0 920 510" xmlns="http://www.w3.org/2000/svg"
+       font-family="Arial, Helvetica, sans-serif" font-size="11">
+    <defs>
+      <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3.5" orient="auto">
+        <path d="M0,0.5 L9,3.5 L0,6.5 Z" fill="#111"/>
+      </marker>
+      <marker id="arr-g" markerWidth="10" markerHeight="10" refX="9" refY="3.5" orient="auto">
+        <path d="M0,0.5 L9,3.5 L0,6.5 Z" fill="#777"/>
+      </marker>
+    </defs>
+
+    <!-- ─── Outer frame ─── -->
+    <rect x="4" y="4" width="912" height="502" rx="6"
+          fill="none" stroke="#888" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+    <!-- ═══════════════════════════════════
+         SUBSYSTEM BACKGROUNDS
+    ═══════════════════════════════════ -->
+
+    <!-- External (dashed, no fill) -->
+    <rect x="14" y="22" width="118" height="252" rx="5"
+          fill="none" stroke="#666" stroke-width="1.2" stroke-dasharray="5,3"/>
+    <text x="73" y="17" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#333">External</text>
+
+    <!-- Research Pipeline — orange -->
+    <rect x="146" y="14" width="228" height="260" rx="6"
+          fill="#FDEBD0" stroke="#E59866" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <text x="164" y="29" font-size="11" font-weight="bold" fill="#7D3C00">Research Pipeline Subsystem</text>
+    <text x="164" y="42" font-size="9.5" fill="#7D3C00" font-style="italic">(Offline)</text>
+
+    <!-- Storage — blue -->
+    <rect x="390" y="14" width="170" height="260" rx="6"
+          fill="#D6EAF8" stroke="#2980B9" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <text x="408" y="29" font-size="11" font-weight="bold" fill="#154360">Storage</text>
+
+    <!-- Backend API — purple -->
+    <rect x="576" y="14" width="200" height="260" rx="6"
+          fill="#E8DAEF" stroke="#7D3C98" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <text x="594" y="29" font-size="11" font-weight="bold" fill="#4A235A">Backend API Subsystem</text>
+    <text x="594" y="42" font-size="9.5" fill="#4A235A" font-style="italic">(Online · Render)</text>
+
+    <!-- Clients — green -->
+    <rect x="14" y="294" width="890" height="194" rx="6"
+          fill="#EAFAF1" stroke="#27AE60" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <text x="32" y="309" font-size="11" font-weight="bold" fill="#1E8449">Client Layer</text>
+
+    <!-- ═══════════════════════════════════
+         NODE BOXES
+    ═══════════════════════════════════ -->
+
+    <!-- arXiv API -->
+    <rect x="24" y="56" width="98" height="62" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <text x="73" y="79" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">arXiv API</text>
+    <text x="73" y="95" text-anchor="middle" font-size="9.5" fill="#555">REST Endpoint</text>
+    <text x="73" y="109" text-anchor="middle" font-size="9.5" fill="#555">Paper Metadata</text>
+
+    <!-- Scraper -->
+    <rect x="162" y="54" width="138" height="62" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <text x="231" y="77" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">Scraper</text>
+    <text x="231" y="92" text-anchor="middle" font-size="9.5" fill="#555">arxiv_scraper.py</text>
+    <text x="231" y="107" text-anchor="middle" font-size="9.5" fill="#555">Fetch &amp; write CSVs</text>
+
+    <!-- Analysis -->
+    <rect x="162" y="142" width="138" height="62" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <text x="231" y="165" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">Analysis</text>
+    <text x="231" y="180" text-anchor="middle" font-size="9.5" fill="#555">arxiv_analysis.py</text>
+    <text x="231" y="195" text-anchor="middle" font-size="9.5" fill="#555">TF-IDF · Clustering</text>
+
+    <!-- Advisor Train -->
+    <rect x="162" y="224" width="138" height="40" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <text x="231" y="241" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">Train Classifier</text>
+    <text x="231" y="256" text-anchor="middle" font-size="9.5" fill="#555">TF-IDF + LogReg OvR</text>
+
+    <!-- data/ -->
+    <rect x="404" y="54" width="142" height="68" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <line x1="404" y1="72" x2="546" y2="72" stroke="#333" stroke-width="1"/>
+    <text x="475" y="67" text-anchor="middle" font-weight="bold" font-size="10.5" fill="#111">data/</text>
+    <text x="475" y="89" text-anchor="middle" font-size="9.5" fill="#555">arxiv_data/*.csv</text>
+    <text x="475" y="104" text-anchor="middle" font-size="9.5" fill="#555">analysis_output/*.json</text>
+    <text x="475" y="116" text-anchor="middle" font-size="8.5" fill="#888" font-style="italic">Disk Storage</text>
+
+    <!-- backend/models/ -->
+    <rect x="404" y="158" width="142" height="68" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <line x1="404" y1="176" x2="546" y2="176" stroke="#333" stroke-width="1"/>
+    <text x="475" y="171" text-anchor="middle" font-weight="bold" font-size="10.5" fill="#111">backend/models/</text>
+    <text x="475" y="192" text-anchor="middle" font-size="9.5" fill="#555">*.pkl · meta.json</text>
+    <text x="475" y="207" text-anchor="middle" font-size="9.5" fill="#555">thresholds · trends</text>
+    <text x="475" y="219" text-anchor="middle" font-size="8.5" fill="#888" font-style="italic">Model Artifacts</text>
+
+    <!-- FastAPI (double-border = server) -->
+    <rect x="590" y="48" width="172" height="82" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+    <rect x="594" y="52" width="164" height="74" rx="5" fill="none" stroke="#333" stroke-width="0.8"/>
+    <text x="676" y="73" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">FastAPI / Uvicorn</text>
+    <text x="676" y="89" text-anchor="middle" font-size="9.5" fill="#555">GET  /health  ·  /advisor/stats</text>
+    <text x="676" y="104" text-anchor="middle" font-size="9.5" fill="#555">POST /api/v1/advisor/advise</text>
+    <text x="676" y="120" text-anchor="middle" font-size="8.5" fill="#888" font-style="italic">Render Web Service</text>
+
+    <!-- advisor_service -->
+    <rect x="590" y="156" width="172" height="52" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <text x="676" y="177" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">advisor_service</text>
+    <text x="676" y="192" text-anchor="middle" font-size="9.5" fill="#555">Validate · advise_idea()</text>
+    <text x="676" y="200" text-anchor="middle" font-size="9" fill="#888" font-style="italic"> </text>
+
+    <!-- idea_advisor inference -->
+    <rect x="590" y="228" width="172" height="38" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <text x="676" y="245" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">idea_advisor</text>
+    <text x="676" y="259" text-anchor="middle" font-size="9.5" fill="#555">Vectorize · Predict · Threshold</text>
+
+    <!-- Web App -->
+    <rect x="60" y="330" width="160" height="70" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <text x="140" y="354" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">Web App</text>
+    <text x="140" y="370" text-anchor="middle" font-size="9.5" fill="#555">HTML / JS · Chart.js</text>
+    <text x="140" y="385" text-anchor="middle" font-size="9.5" fill="#555">Static Site (Render)</text>
+
+    <!-- Mobile App (optional) -->
+    <rect x="254" y="330" width="160" height="70" rx="8" fill="#fff" stroke="#777" stroke-width="1.2" stroke-dasharray="5,3"/>
+    <text x="334" y="354" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">Mobile App</text>
+    <text x="334" y="370" text-anchor="middle" font-size="9.5" fill="#555">Flutter · Dart</text>
+    <text x="334" y="385" text-anchor="middle" font-size="9.5" fill="#666" font-style="italic">(Optional)</text>
+
+    <!-- API Response box -->
+    <rect x="506" y="330" width="220" height="70" rx="8" fill="#fff" stroke="#333" stroke-width="1.8"/>
+    <text x="616" y="350" text-anchor="middle" font-weight="bold" font-size="11" fill="#111">API Response (JSON)</text>
+    <text x="616" y="366" text-anchor="middle" font-size="9.5" fill="#555">primary_domain · all_domains</text>
+    <text x="616" y="381" text-anchor="middle" font-size="9.5" fill="#555">domain_confidence · growth_info</text>
+    <text x="616" y="396" text-anchor="middle" font-size="9.5" fill="#555">model_info</text>
+
+    <!-- ═══════════════════════════════════
+         ARROWS
+    ═══════════════════════════════════ -->
+
+    <!-- arXiv → Scraper -->
+    <line x1="122" y1="87" x2="159" y2="87"
+          stroke="#111" stroke-width="1.8" marker-end="url(#arr)"/>
+
+    <!-- Scraper → Analysis -->
+    <line x1="231" y1="116" x2="231" y2="139"
+          stroke="#111" stroke-width="1.8" marker-end="url(#arr)"/>
+
+    <!-- Analysis → Train -->
+    <line x1="231" y1="204" x2="231" y2="221"
+          stroke="#111" stroke-width="1.8" marker-end="url(#arr)"/>
+
+    <!-- Scraper → data/ -->
+    <line x1="300" y1="85" x2="401" y2="85"
+          stroke="#111" stroke-width="1.8" marker-end="url(#arr)"/>
+
+    <!-- Analysis → data/ (angled) -->
+    <path d="M300,170 Q352,170 352,100 L401,100"
+          stroke="#111" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+
+    <!-- Train → models/ -->
+    <path d="M300,244 Q352,244 352,192 L401,192"
+          stroke="#111" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+
+    <!-- Train → data/ (read, dashed) -->
+    <path d="M300,236 Q358,236 358,110 L401,110"
+          stroke="#777" stroke-width="1.4" stroke-dasharray="5,3"
+          fill="none" marker-end="url(#arr-g)"/>
+
+    <!-- data/ -.-> FastAPI (readiness, dashed) -->
+    <line x1="546" y1="88" x2="587" y2="88"
+          stroke="#777" stroke-width="1.4" stroke-dasharray="5,3"
+          fill="none" marker-end="url(#arr-g)"/>
+
+    <!-- models/ → advisor_service -->
+    <line x1="546" y1="193" x2="587" y2="185"
+          stroke="#111" stroke-width="1.8" marker-end="url(#arr)"/>
+
+    <!-- FastAPI → advisor_service -->
+    <line x1="676" y1="130" x2="676" y2="153"
+          stroke="#111" stroke-width="1.8" marker-end="url(#arr)"/>
+
+    <!-- advisor_service → idea_advisor -->
+    <line x1="676" y1="208" x2="676" y2="225"
+          stroke="#111" stroke-width="1.8" marker-end="url(#arr)"/>
+
+    <!-- Web App → FastAPI (up and over) -->
+    <path d="M140,330 L140,283 Q140,274 150,274 L668,274 Q676,274 676,266"
+          stroke="#111" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+
+    <!-- Mobile App → FastAPI (optional, dashed) -->
+    <path d="M334,330 L334,279 Q334,274 344,274"
+          stroke="#777" stroke-width="1.4" stroke-dasharray="5,3"
+          fill="none" marker-end="url(#arr-g)"/>
+
+    <!-- POST label on top -->
+    <rect x="350" y="265" width="280" height="16" rx="3" fill="#fff" opacity="0.85"/>
+    <text x="490" y="277" text-anchor="middle" font-size="9.5" fill="#333" font-style="italic">
+      POST /api/v1/advisor/advise  {title, abstract}
+    </text>
+
+    <!-- FastAPI → Response -->
+    <path d="M762,89 Q830,89 830,365 L726,365"
+          stroke="#111" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+    <!-- label -->
+    <rect x="836" y="200" width="16" height="80" rx="2" fill="#fff" opacity="0.8"/>
+    <text x="842" y="246" text-anchor="middle" font-size="9" fill="#444"
+          transform="rotate(90 842 246)" font-style="italic">JSON Response</text>
+
+    <!-- ═══════════════════════════════════
+         LEGEND
+    ═══════════════════════════════════ -->
+    <rect x="14" y="458" width="370" height="28" rx="4"
+          fill="#f8f8f8" stroke="#ccc" stroke-width="1"/>
+    <line x1="24" y1="472" x2="52" y2="472"
+          stroke="#111" stroke-width="1.8" marker-end="url(#arr)"/>
+    <text x="57" y="476" font-size="10" fill="#333">Data / Control Flow</text>
+    <line x1="170" y1="472" x2="198" y2="472"
+          stroke="#777" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#arr-g)"/>
+    <text x="203" y="476" font-size="10" fill="#333">Read / Optional Dependency</text>
+
+  </svg>
+
+  <div class="btn-bar">
+    <button onclick="window.print()">🖨 Print / Save as PDF</button>
+    <button onclick="downloadSVG()">⬇ Download SVG</button>
+  </div>
+</div>
+
+<script>
+function downloadSVG() {
+  const svg = document.getElementById('diag');
+  const data = new XMLSerializer().serializeToString(svg);
+  const blob = new Blob([data], { type: 'image/svg+xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'arxiv-architecture.svg';
+  a.click();
+}
+</script>
+</body>
+</html>
