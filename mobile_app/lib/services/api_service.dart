@@ -4,7 +4,7 @@ import '../models/advisor_response.dart';
 
 class ApiService {
   static const String _baseUrl =
-      'https://arxiv-trend-predictor-api.onrender.com';
+      'https://arxiv-trend-predictor-api-001.onrender.com';
 
   static Future<AdvisorResponse> getAdvice({
     required String title,

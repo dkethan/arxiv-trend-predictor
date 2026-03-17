@@ -1,7 +1,7 @@
 (function () {
   const API_BASE =
     document.documentElement.dataset.apiBase ||
-    "https://arxiv-trend-predictor-api.onrender.com";
+    "https://arxiv-trend-predictor-api-001.onrender.com";
 
   const CHART_COLORS = {
     accent: "#2ec4b6",
@@ -98,6 +98,10 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
+              title: function (items) {
+                if (!items || !items.length) return "";
+                return confLabels[items[0].dataIndex] || "";
+              },
               label: function (ctx) {
                 return (ctx.raw * 100).toFixed(1) + "%";
               },
@@ -110,7 +114,7 @@
             grid: { color: CHART_COLORS.grid },
             ticks: { color: CHART_COLORS.text, callback: function (v) { return (v * 100).toFixed(0) + "%"; } },
           },
-          y: { grid: { display: false }, ticks: { color: CHART_COLORS.text } },
+          y: { grid: { display: false }, ticks: { display: false } },
         },
       },
     });
@@ -149,6 +153,10 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
+              title: function (items) {
+                if (!items || !items.length) return "";
+                return growthLabels[items[0].dataIndex] || "";
+              },
               label: function (ctx) {
                 var domain = growthLabels[ctx.dataIndex];
                 var g = growthInfo[domain] || {};
@@ -164,7 +172,7 @@
             grid: { color: CHART_COLORS.grid },
             ticks: { color: CHART_COLORS.text, callback: function (v) { return (v * 100).toFixed(0) + "%"; } },
           },
-          y: { grid: { display: false }, ticks: { color: CHART_COLORS.text } },
+          y: { grid: { display: false }, ticks: { display: false } },
         },
       },
     });
@@ -280,6 +288,16 @@
     return (value * 100).toFixed(1) + "%";
   }
 
+  function abbreviateDomain(domain) {
+    if (!domain || typeof domain !== "string") return "N/A";
+    var words = domain.split(/[\s\/_-]+/).filter(Boolean);
+    if (words.length >= 2) {
+      return words.map(function (w) { return w.charAt(0).toUpperCase(); }).join("").slice(0, 5);
+    }
+    if (domain.length <= 8) return domain.toUpperCase();
+    return domain.slice(0, 8).toUpperCase();
+  }
+
   function r2FitLabel(r2) {
     if (r2 == null || typeof r2 !== "number") return "—";
     if (r2 >= 0.5) return "Strong fit";
@@ -330,14 +348,39 @@
         }
       });
       var avgConf = allDomains.length ? confSum / allDomains.length : 0;
+      var primaryShort = abbreviateDomain(primaryDomain);
+      var topGrowthDomain = topSlopeDomain ? escapeHtml(topSlopeDomain) : "—";
+      var bestFitDomain = bestR2Domain ? escapeHtml(bestR2Domain) : "—";
       vizNumbers.innerHTML =
         "<p class=\"viz-numbers-title\">Numbers at a glance</p>" +
-        "<div class=\"viz-stat-tiles\">" +
-        "<div class=\"viz-stat-tile\"><span class=\"viz-stat-label\">Primary</span><span class=\"viz-stat-value viz-stat-primary\">" + escapeHtml(primaryDomain) + "</span><span class=\"viz-stat-meta\">" + formatPercent(domainConfidence[primaryDomain] || 0) + "</span></div>" +
-        "<div class=\"viz-stat-tile\"><span class=\"viz-stat-label\">Predicted domains</span><span class=\"viz-stat-value\">" + allDomains.length + "</span></div>" +
-        "<div class=\"viz-stat-tile\"><span class=\"viz-stat-label\">Top growth</span><span class=\"viz-stat-value viz-num-growth\">" + (topSlopeDomain ? escapeHtml(topSlopeDomain) : "—") + "</span><span class=\"viz-stat-meta\">slope " + (topSlope !== -Infinity ? topSlope.toFixed(3) : "—") + "</span></div>" +
-        "<div class=\"viz-stat-tile\"><span class=\"viz-stat-label\">Best R² fit</span><span class=\"viz-stat-value\">" + (bestR2Domain ? escapeHtml(bestR2Domain) : "—") + "</span><span class=\"viz-stat-meta\">" + (bestR2 !== -Infinity ? bestR2.toFixed(3) : "—") + "</span></div>" +
-        "<div class=\"viz-stat-tile\"><span class=\"viz-stat-label\">Avg confidence</span><span class=\"viz-stat-value\">" + formatPercent(avgConf) + "</span></div>" +
+        "<div class=\"viz-stat-layout\">" +
+        "<div class=\"viz-stat-tile viz-stat-tile-primary\">" +
+        "<span class=\"viz-stat-label\">Primary</span>" +
+        "<span class=\"viz-stat-primary-code\">" + escapeHtml(primaryShort) + "</span>" +
+        "<span class=\"viz-stat-primary-name\">" + escapeHtml(primaryDomain) + "</span>" +
+        "<span class=\"viz-stat-primary-confidence\">" + formatPercent(domainConfidence[primaryDomain] || 0) + "</span>" +
+        "<span class=\"viz-stat-meta\">confidence</span>" +
+        "</div>" +
+        "<div class=\"viz-stat-tile viz-stat-tile-top-growth\">" +
+        "<span class=\"viz-stat-label\">Top growth</span>" +
+        "<span class=\"viz-stat-value viz-num-growth\">" + topGrowthDomain + "</span>" +
+        "<span class=\"viz-stat-meta\">slope " + (topSlope !== -Infinity ? topSlope.toFixed(3) : "—") + "</span>" +
+        "</div>" +
+        "<div class=\"viz-stat-tile viz-stat-tile-domains\">" +
+        "<span class=\"viz-stat-label\">Domains</span>" +
+        "<span class=\"viz-stat-value\">" + allDomains.length + "</span>" +
+        "<span class=\"viz-stat-meta\">predicted</span>" +
+        "</div>" +
+        "<div class=\"viz-stat-tile viz-stat-tile-summary\">" +
+        "<div class=\"viz-stat-summary-item\">" +
+        "<span class=\"viz-stat-label\">Best R² fit</span>" +
+        "<span class=\"viz-stat-value\">" + bestFitDomain + " — " + (bestR2 !== -Infinity ? bestR2.toFixed(3) : "—") + "</span>" +
+        "</div>" +
+        "<div class=\"viz-stat-summary-item viz-stat-summary-item-right\">" +
+        "<span class=\"viz-stat-label\">Avg confidence</span>" +
+        "<span class=\"viz-stat-value\">" + formatPercent(avgConf) + "</span>" +
+        "</div>" +
+        "</div>" +
         "</div>";
     }
 
@@ -435,35 +478,37 @@
     resultGrowth.appendChild(growthList);
 
     // ——— Model info card: 2-column metric tiles ———
-    resultModelInfo.innerHTML = "";
-    var modelInfo = data.model_info || {};
-    if (Object.keys(modelInfo).length > 0) {
-      resultModelInfo.classList.remove("hidden");
-      var modelTitle = document.createElement("p");
-      modelTitle.className = "model-info-title";
-      modelTitle.textContent = "Model Performance Metrics";
-      resultModelInfo.appendChild(modelTitle);
-      var tiles = document.createElement("div");
-      tiles.className = "model-metrics-grid";
-      var metrics = [
-        { key: "subset_accuracy", label: "Subset Accuracy" },
-        { key: "hamming_loss", label: "Hamming Loss" },
-        { key: "macro_f1", label: "Macro F1" },
-        { key: "micro_f1", label: "Micro F1" },
-        { key: "samples_f1", label: "Samples F1" },
-        { key: "cv_micro_f1_mean", label: "CV Micro F1 (mean)" },
-        { key: "cv_micro_f1_std", label: "CV Micro F1 (std)" }
-      ];
-      metrics.forEach(function (m) {
-        if (modelInfo[m.key] == null) return;
-        var tile = document.createElement("div");
-        tile.className = "model-metric-tile";
-        tile.innerHTML = "<span class=\"model-metric-label\">" + m.label + "</span><span class=\"model-metric-value\">" + modelInfo[m.key].toFixed(4) + "</span>";
-        tiles.appendChild(tile);
-      });
-      resultModelInfo.appendChild(tiles);
-    } else {
-      resultModelInfo.classList.add("hidden");
+    if (resultModelInfo) {
+      resultModelInfo.innerHTML = "";
+      var modelInfo = data.model_info || {};
+      if (Object.keys(modelInfo).length > 0) {
+        resultModelInfo.classList.remove("hidden");
+        var modelTitle = document.createElement("p");
+        modelTitle.className = "model-info-title";
+        modelTitle.textContent = "Model Performance Metrics";
+        resultModelInfo.appendChild(modelTitle);
+        var tiles = document.createElement("div");
+        tiles.className = "model-metrics-grid";
+        var metrics = [
+          { key: "subset_accuracy", label: "Subset Accuracy" },
+          { key: "hamming_loss", label: "Hamming Loss" },
+          { key: "macro_f1", label: "Macro F1" },
+          { key: "micro_f1", label: "Micro F1" },
+          { key: "samples_f1", label: "Samples F1" },
+          { key: "cv_micro_f1_mean", label: "CV Micro F1 (mean)" },
+          { key: "cv_micro_f1_std", label: "CV Micro F1 (std)" }
+        ];
+        metrics.forEach(function (m) {
+          if (modelInfo[m.key] == null) return;
+          var tile = document.createElement("div");
+          tile.className = "model-metric-tile";
+          tile.innerHTML = "<span class=\"model-metric-label\">" + m.label + "</span><span class=\"model-metric-value\">" + modelInfo[m.key].toFixed(4) + "</span>";
+          tiles.appendChild(tile);
+        });
+        resultModelInfo.appendChild(tiles);
+      } else {
+        resultModelInfo.classList.add("hidden");
+      }
     }
   }
 
