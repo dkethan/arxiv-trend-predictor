@@ -1,7 +1,7 @@
 (function () {
   const API_BASE =
     document.documentElement.dataset.apiBase ||
-    "https://arxiv-trend-predictor-api.onrender.com";
+    "https://arxiv-trend-predictor-api-001.onrender.com";
 
   const CHART_COLORS = {
     accent: "#2ec4b6",
@@ -32,9 +32,6 @@
   const resultDomain = document.getElementById("result-domain");
   const resultGrowth = document.getElementById("result-growth");
   const resultModelInfo = document.getElementById("result-model-info");
-  const resultMessageWrap = document.getElementById("result-message-wrap");
-  const resultMessage = document.getElementById("result-message");
-  const resultDisclaimer = document.getElementById("result-disclaimer");
   const errorSection = document.getElementById("error");
   const errorMessage = document.getElementById("error-message");
 
@@ -61,37 +58,37 @@
     destroyCharts();
     if (typeof Chart === "undefined") return;
 
-    // Handle new data structure
-    const primaryDomain = data.primary_domain || data.domain || "Primary";
-    const allDomains = data.all_domains || [primaryDomain];
-    const domainConfidence = data.domain_confidence || {};
-    const growthInfo = data.growth_info || {};
+    var primaryDomain = data.primary_domain || data.domain || "Primary";
+    var allDomains = data.all_domains || [primaryDomain];
+    var domainConfidence = data.domain_confidence || {};
+    var growthInfo = data.growth_info || {};
+    var allDomainNames = Object.keys(domainConfidence);
 
-    // Build labels and values from all_domains
-    var labels = allDomains;
-    var confValues = allDomains.map(function(domain) {
-      return typeof domainConfidence === 'object' ? (domainConfidence[domain] || 0) : 0;
+    // Top 10 domains by confidence (sorted descending)
+    var top10 = allDomainNames.slice().sort(function (a, b) {
+      return (domainConfidence[b] || 0) - (domainConfidence[a] || 0);
+    }).slice(0, 10);
+    var confLabels = top10;
+    var confValues = top10.map(function (d) { return domainConfidence[d] || 0; });
+    var confColors = top10.map(function (d) {
+      return d === primaryDomain ? CHART_COLORS.accentRgba : CHART_COLORS.muted;
     });
-    var bgColors = [CHART_COLORS.accentRgba].concat(
-      allDomains.slice(1).map(function () {
-        return CHART_COLORS.muted;
-      })
-    );
+    var confBorders = top10.map(function (d) {
+      return d === primaryDomain ? CHART_COLORS.accent : "rgba(139,141,152,0.4)";
+    });
 
     chartConfidence = new Chart(document.getElementById("chart-confidence"), {
       type: "bar",
       data: {
-        labels: labels,
-        datasets: [
-          {
-            label: "Confidence",
-            data: confValues,
-            backgroundColor: bgColors,
-            borderColor: [CHART_COLORS.accent].concat(allDomains.slice(1).map(function () { return "rgba(139,141,152,0.4)"; })),
-            borderWidth: 1,
-            borderRadius: 4,
-          },
-        ],
+        labels: confLabels,
+        datasets: [{
+          label: "Confidence",
+          data: confValues,
+          backgroundColor: confColors,
+          borderColor: confBorders,
+          borderWidth: 1,
+          borderRadius: 4,
+        }],
       },
       options: {
         indexAxis: "y",
@@ -101,6 +98,10 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
+              title: function (items) {
+                if (!items || !items.length) return "";
+                return confLabels[items[0].dataIndex] || "";
+              },
               label: function (ctx) {
                 return (ctx.raw * 100).toFixed(1) + "%";
               },
@@ -113,30 +114,36 @@
             grid: { color: CHART_COLORS.grid },
             ticks: { color: CHART_COLORS.text, callback: function (v) { return (v * 100).toFixed(0) + "%"; } },
           },
-          y: { grid: { display: false }, ticks: { color: CHART_COLORS.text } },
+          y: { grid: { display: false }, ticks: { display: false } },
         },
       },
     });
 
-    // Use slope from growth_info for primary domain as growth value (normalized)
-    var primaryGrowthData = growthInfo[primaryDomain] || {};
-    var growthSlope = primaryGrowthData.slope || 0;
-    var growthVal = Math.min(Math.max(growthSlope / 5, 0), 1); // Normalize slope to 0-1 range (assuming max slope ~5)
+    // Grouped horizontal bar: slope per predicted domain, colored by R2 quality
+    var growthLabels = allDomains;
+    var growthSlopes = allDomains.map(function (d) {
+      var g = growthInfo[d] || {};
+      return g.slope != null ? Math.min(1, Math.max(0, g.slope)) : 0;
+    });
+    var growthColors = allDomains.map(function (d) {
+      var r2 = (growthInfo[d] || {}).r2;
+      if (r2 != null && r2 >= 0.5) return CHART_COLORS.success;
+      if (r2 != null && r2 >= 0.25) return "rgba(251, 191, 36, 0.85)";
+      return CHART_COLORS.muted;
+    });
 
     chartGrowth = new Chart(document.getElementById("chart-growth"), {
       type: "bar",
       data: {
-        labels: ["Growth slope"],
-        datasets: [
-          {
-            label: "Slope",
-            data: [growthVal],
-            backgroundColor: CHART_COLORS.success,
-            borderColor: "rgba(52, 211, 153, 0.5)",
-            borderWidth: 1,
-            borderRadius: 6,
-          },
-        ],
+        labels: growthLabels,
+        datasets: [{
+          label: "Slope",
+          data: growthSlopes,
+          backgroundColor: growthColors,
+          borderColor: "rgba(255, 255, 255, 0.1)",
+          borderWidth: 1,
+          borderRadius: 6,
+        }],
       },
       options: {
         indexAxis: "y",
@@ -146,8 +153,14 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
+              title: function (items) {
+                if (!items || !items.length) return "";
+                return growthLabels[items[0].dataIndex] || "";
+              },
               label: function (ctx) {
-                return " Slope: " + growthSlope.toFixed(3) + " (R²: " + (primaryGrowthData.r2 || 0).toFixed(3) + ")";
+                var domain = growthLabels[ctx.dataIndex];
+                var g = growthInfo[domain] || {};
+                return "Slope: " + (g.slope != null ? g.slope.toFixed(3) : "—") + ", R²: " + (g.r2 != null ? g.r2.toFixed(3) : "—");
               },
             },
           },
@@ -159,17 +172,23 @@
             grid: { color: CHART_COLORS.grid },
             ticks: { color: CHART_COLORS.text, callback: function (v) { return (v * 100).toFixed(0) + "%"; } },
           },
-          y: { grid: { display: false }, ticks: { color: CHART_COLORS.text } },
+          y: { grid: { display: false }, ticks: { display: false } },
         },
       },
     });
 
-    // Build scatter points: x=confidence, y=normalized growth slope
-    var scatterPoints = allDomains.map(function(domain, idx) {
+    // Scatter: all 20 domains; predicted = large accent, others = small muted
+    var predSet = {};
+    allDomains.forEach(function (d) { predSet[d] = true; });
+    var scatterPred = [];
+    var scatterOther = [];
+    allDomainNames.forEach(function (domain) {
       var conf = domainConfidence[domain] || 0;
-      var gInfo = growthInfo[domain] || {};
-      var normalizedSlope = Math.min(Math.max((gInfo.slope || 0) / 5, 0), 1);
-      return { x: conf, y: normalizedSlope, label: domain };
+      var g = growthInfo[domain] || {};
+      var normSlope = Math.min(1, Math.max(0, (g.slope || 0)));
+      var point = { x: conf, y: normSlope, label: domain };
+      if (predSet[domain]) scatterPred.push(point);
+      else scatterOther.push(point);
     });
 
     chartScatter = new Chart(document.getElementById("chart-scatter"), {
@@ -177,8 +196,8 @@
       data: {
         datasets: [
           {
-            label: primaryDomain,
-            data: scatterPoints.filter(function (_, i) { return i === 0; }),
+            label: "Predicted",
+            data: scatterPred,
             backgroundColor: CHART_COLORS.accent,
             borderColor: "rgba(46, 196, 182, 0.6)",
             borderWidth: 2,
@@ -186,13 +205,13 @@
             pointHoverRadius: 12,
           },
           {
-            label: "Other Domains",
-            data: scatterPoints.slice(1),
+            label: "Other domains",
+            data: scatterOther,
             backgroundColor: CHART_COLORS.muted,
             borderColor: "rgba(139, 141, 152, 0.5)",
             borderWidth: 1,
-            pointRadius: 6,
-            pointHoverRadius: 8,
+            pointRadius: 5,
+            pointHoverRadius: 7,
           },
         ],
       },
@@ -210,8 +229,8 @@
               label: function (ctx) {
                 var p = ctx.raw;
                 var domain = p.label || "Point";
-                var gInfo = growthInfo[domain] || {};
-                return domain + " — conf: " + (p.x * 100).toFixed(1) + "%, slope: " + ((gInfo.slope || 0).toFixed(3)) + ", R²: " + ((gInfo.r2 || 0).toFixed(3));
+                var g = growthInfo[domain] || {};
+                return domain + " — conf: " + (p.x * 100).toFixed(1) + "%, slope: " + ((g.slope || 0).toFixed(3)) + ", R²: " + ((g.r2 || 0).toFixed(3));
               },
             },
           },
@@ -269,35 +288,28 @@
     return (value * 100).toFixed(1) + "%";
   }
 
-  function renderMessage(text) {
-    if (!text) return "";
-    var rawLines = text.split(/\n/).map(function (s) { return s.trim(); }).filter(Boolean);
-    if (rawLines.length === 0) return "";
-
-    var items;
-    var allNumbered = rawLines.length > 0 && rawLines.every(function (line) {
-      return /^\d+\.\s*.+/.test(line);
-    });
-    if (allNumbered && rawLines.length > 1) {
-      // Already "1. ..." "2. ..." from API
-      items = rawLines.map(function (line) {
-        var m = line.match(/^\d+\.\s*(.*)$/);
-        return (m ? m[1] : line).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-      });
-    } else {
-      // Single paragraph from API: split at sentence boundaries (period + space + capital letter)
-      var paragraph = rawLines.join(" ");
-      var sentences = paragraph.split(/\.\s+(?=[A-Z])/).map(function (s) {
-        return s.trim();
-      }).filter(Boolean);
-      items = sentences.map(function (s) {
-        var withPeriod = s.slice(-1) === "." ? s : s + ".";
-        return withPeriod.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-      });
+  function abbreviateDomain(domain) {
+    if (!domain || typeof domain !== "string") return "N/A";
+    var words = domain.split(/[\s\/_-]+/).filter(Boolean);
+    if (words.length >= 2) {
+      return words.map(function (w) { return w.charAt(0).toUpperCase(); }).join("").slice(0, 5);
     }
-    if (items.length === 0) return "";
-    var lis = items.map(function (html) { return "<li>" + html + "</li>"; }).join("");
-    return "<ol class=\"result-message-list\">" + lis + "</ol>";
+    if (domain.length <= 8) return domain.toUpperCase();
+    return domain.slice(0, 8).toUpperCase();
+  }
+
+  function r2FitLabel(r2) {
+    if (r2 == null || typeof r2 !== "number") return "—";
+    if (r2 >= 0.5) return "Strong fit";
+    if (r2 >= 0.25) return "Moderate";
+    return "Weak";
+  }
+
+  function slopeDirectionClass(slope) {
+    if (slope == null || typeof slope !== "number") return "growth-slope-muted";
+    if (slope > 0.3) return "growth-slope-up";
+    if (slope > 0.1) return "growth-slope-moderate";
+    return "growth-slope-muted";
   }
 
   function renderResult(data) {
@@ -306,147 +318,198 @@
     vizSection.classList.remove("hidden");
     buildCharts(data);
 
-    if (vizNumbers) {
-      var primaryDomain = data.primary_domain || data.domain || "Primary";
-      var allDomains = data.all_domains || [primaryDomain];
-      var domainConfidence = data.domain_confidence || {};
-      var growthInfo = data.growth_info || {};
-
-      var items = [];
-      allDomains.forEach(function(domain, idx) {
-        var conf = domainConfidence[domain] || 0;
-        var prefix = idx === 0 ? "<strong>" : "";
-        var suffix = idx === 0 ? "</strong>" : "";
-        items.push("<li class=\"viz-num-item\">" + prefix + escapeHtml(domain) + suffix + " " + formatPercent(conf) + "</li>");
-      });
-
-      // Add growth info for primary domain
-      var primaryGrowthData = growthInfo[primaryDomain] || {};
-      var slopeVal = primaryGrowthData.slope != null ? primaryGrowthData.slope.toFixed(3) : "—";
-      var r2Val = primaryGrowthData.r2 != null ? primaryGrowthData.r2.toFixed(3) : "—";
-      items.push("<li class=\"viz-num-item\"><strong>Growth (slope):</strong> <span class=\"viz-num-growth\">" + slopeVal + "</span></li>");
-      items.push("<li class=\"viz-num-item\"><strong>R² (fit quality):</strong> " + r2Val + "</li>");
-
-      vizNumbers.innerHTML =
-        "<p class=\"viz-numbers-title\">Numbers at a glance</p>" +
-        "<ul class=\"viz-numbers-list\">" + items.join("") + "</ul>";
-    }
-
-    resultDomain.innerHTML = "";
-    var primaryDomain = data.primary_domain || data.domain || "—";
+    var primaryDomain = data.primary_domain || data.domain || "Primary";
     var allDomains = data.all_domains || [primaryDomain];
     var domainConfidence = data.domain_confidence || {};
     var growthInfo = data.growth_info || {};
+    var allDomainNames = Object.keys(domainConfidence);
+    var sortedByConf = allDomainNames.slice().sort(function (a, b) {
+      return (domainConfidence[b] || 0) - (domainConfidence[a] || 0);
+    });
 
-    var mainConf = domainConfidence[primaryDomain] || 0;
-    var domainRow = document.createElement("div");
-    domainRow.className = "domain-main-row";
-    domainRow.innerHTML =
-      "<span class=\"domain-name\">" + escapeHtml(primaryDomain) + "</span>" +
-      "<span class=\"domain-confidence-value\" aria-label=\"Confidence\">" + formatPercent(mainConf) + "</span>";
-    resultDomain.appendChild(domainRow);
-
-    const otherDomains = allDomains.slice(1);
-    if (otherDomains.length > 0) {
-      const altWrap = document.createElement("div");
-      altWrap.className = "alternates";
-      const altTitle = document.createElement("p");
-      altTitle.className = "alternates-title";
-      altTitle.textContent = "Other predicted domains";
-      altWrap.appendChild(altTitle);
-      const ul = document.createElement("ul");
-      ul.className = "alternate-list";
-      ul.setAttribute("role", "table");
-      var header = document.createElement("li");
-      header.className = "alternate-list-header";
-      header.innerHTML = "<span>Domain</span><span>Confidence</span><span>Growth</span>";
-      ul.appendChild(header);
-      otherDomains.forEach(function (domain) {
-        const conf = domainConfidence[domain] || 0;
-        const gInfo = growthInfo[domain] || {};
-        const slope = gInfo.slope != null ? gInfo.slope.toFixed(3) : "—";
-        const li = document.createElement("li");
-        li.innerHTML =
-          "<span>" + escapeHtml(domain) + "</span>" +
-          "<span class=\"alternate-conf\">" + formatPercent(conf) + "</span>" +
-          "<span class=\"alternate-growth\">" + slope + "</span>";
-        ul.appendChild(li);
-      });
-      altWrap.appendChild(ul);
-      resultDomain.appendChild(altWrap);
-    }
-
-    resultGrowth.innerHTML = "";
-    var primaryDomain = data.primary_domain || data.domain || "Primary";
-    var growthInfo = data.growth_info || {};
-    var primaryGrowthData = growthInfo[primaryDomain] || {};
-
-    var growthLabel = document.createElement("p");
-    growthLabel.className = "growth-label";
-    growthLabel.textContent = "Growth Trend for " + primaryDomain;
-    resultGrowth.appendChild(growthLabel);
-
-    var metricsRow = document.createElement("div");
-    metricsRow.className = "growth-metrics-row";
-
-    var slopeWrap = document.createElement("p");
-    slopeWrap.className = "growth-score-wrap";
-    var slopeVal = primaryGrowthData.slope != null ? primaryGrowthData.slope.toFixed(3) : "—";
-    slopeWrap.innerHTML =
-      "Slope<span class=\"growth-score-value\" aria-label=\"Growth slope\">" + slopeVal + "</span>";
-    metricsRow.appendChild(slopeWrap);
-
-    var r2Wrap = document.createElement("p");
-    r2Wrap.className = "growth-score-wrap";
-    var r2Val = primaryGrowthData.r2 != null ? primaryGrowthData.r2.toFixed(3) : "—";
-    r2Wrap.innerHTML =
-      "R² fit quality<span class=\"growth-score-value\" aria-label=\"R-squared\">" + r2Val + "</span>";
-    metricsRow.appendChild(r2Wrap);
-
-    resultGrowth.appendChild(metricsRow);
-
-    // Display model info metrics
-    resultModelInfo.innerHTML = "";
-    var modelInfo = data.model_info || {};
-    if (Object.keys(modelInfo).length > 0) {
-      var modelInfoTitle = document.createElement("p");
-      modelInfoTitle.className = "model-info-title";
-      modelInfoTitle.textContent = "Model Performance Metrics";
-      resultModelInfo.appendChild(modelInfoTitle);
-
-      var metricsTable = document.createElement("div");
-      metricsTable.className = "model-metrics-table";
-
-      var metrics = [
-        { key: "subset_accuracy", label: "Subset Accuracy" },
-        { key: "hamming_loss", label: "Hamming Loss" },
-        { key: "macro_f1", label: "Macro F1" },
-        { key: "micro_f1", label: "Micro F1" },
-        { key: "samples_f1", label: "Samples F1" },
-        { key: "cv_micro_f1_mean", label: "CV Micro F1 (mean)" },
-        { key: "cv_micro_f1_std", label: "CV Micro F1 (std)" }
-      ];
-
-      metrics.forEach(function(metric) {
-        if (modelInfo[metric.key] != null) {
-          var row = document.createElement("p");
-          row.className = "model-metric-row";
-          var val = modelInfo[metric.key].toFixed(4);
-          row.innerHTML = "<span>" + metric.label + "</span><span class=\"model-metric-value\">" + val + "</span>";
-          metricsTable.appendChild(row);
+    // ——— Numbers at a glance: stat tiles ———
+    if (vizNumbers) {
+      var topSlopeDomain = null;
+      var topSlope = -Infinity;
+      var bestR2Domain = null;
+      var bestR2 = -Infinity;
+      var confSum = 0;
+      allDomains.forEach(function (d) {
+        var conf = domainConfidence[d] || 0;
+        confSum += conf;
+        var g = growthInfo[d] || {};
+        if (g.slope != null && g.slope > topSlope) {
+          topSlope = g.slope;
+          topSlopeDomain = d;
+        }
+        if (g.r2 != null && g.r2 > bestR2) {
+          bestR2 = g.r2;
+          bestR2Domain = d;
         }
       });
-
-      resultModelInfo.appendChild(metricsTable);
-    } else {
-      resultModelInfo.classList.add("hidden");
+      var avgConf = allDomains.length ? confSum / allDomains.length : 0;
+      var primaryShort = abbreviateDomain(primaryDomain);
+      var topGrowthDomain = topSlopeDomain ? escapeHtml(topSlopeDomain) : "—";
+      var bestFitDomain = bestR2Domain ? escapeHtml(bestR2Domain) : "—";
+      vizNumbers.innerHTML =
+        "<p class=\"viz-numbers-title\">Numbers at a glance</p>" +
+        "<div class=\"viz-stat-layout\">" +
+        "<div class=\"viz-stat-tile viz-stat-tile-primary\">" +
+        "<span class=\"viz-stat-label\">Primary</span>" +
+        "<span class=\"viz-stat-primary-code\">" + escapeHtml(primaryShort) + "</span>" +
+        "<span class=\"viz-stat-primary-name\">" + escapeHtml(primaryDomain) + "</span>" +
+        "<span class=\"viz-stat-primary-confidence\">" + formatPercent(domainConfidence[primaryDomain] || 0) + "</span>" +
+        "<span class=\"viz-stat-meta\">confidence</span>" +
+        "</div>" +
+        "<div class=\"viz-stat-tile viz-stat-tile-top-growth\">" +
+        "<span class=\"viz-stat-label\">Top growth</span>" +
+        "<span class=\"viz-stat-value viz-num-growth\">" + topGrowthDomain + "</span>" +
+        "<span class=\"viz-stat-meta\">slope " + (topSlope !== -Infinity ? topSlope.toFixed(3) : "—") + "</span>" +
+        "</div>" +
+        "<div class=\"viz-stat-tile viz-stat-tile-domains\">" +
+        "<span class=\"viz-stat-label\">Domains</span>" +
+        "<span class=\"viz-stat-value\">" + allDomains.length + "</span>" +
+        "<span class=\"viz-stat-meta\">predicted</span>" +
+        "</div>" +
+        "<div class=\"viz-stat-tile viz-stat-tile-summary\">" +
+        "<div class=\"viz-stat-summary-item\">" +
+        "<span class=\"viz-stat-label\">Best R² fit</span>" +
+        "<span class=\"viz-stat-value\">" + bestFitDomain + " — " + (bestR2 !== -Infinity ? bestR2.toFixed(3) : "—") + "</span>" +
+        "</div>" +
+        "<div class=\"viz-stat-summary-item viz-stat-summary-item-right\">" +
+        "<span class=\"viz-stat-label\">Avg confidence</span>" +
+        "<span class=\"viz-stat-value\">" + formatPercent(avgConf) + "</span>" +
+        "</div>" +
+        "</div>" +
+        "</div>";
     }
 
+    // ——— Domain card: hero + predicted rows + all-domain landscape ———
+    resultDomain.innerHTML = "";
+    var mainConf = domainConfidence[primaryDomain] || 0;
+    var hero = document.createElement("div");
+    hero.className = "domain-hero";
+    hero.innerHTML =
+      "<div class=\"domain-hero-ring-wrap\" aria-hidden=\"true\"><div class=\"domain-hero-ring\" style=\"--conf:" + mainConf + "\"></div><span class=\"domain-hero-ring-value\">" + formatPercent(mainConf) + "</span></div>" +
+      "<div class=\"domain-hero-text\"><h3 class=\"domain-name\">" + escapeHtml(primaryDomain) + "</h3><p class=\"domain-hero-sub\">Primary classification</p></div>";
+    resultDomain.appendChild(hero);
 
-    var messageHtml = renderMessage(data.message || "");
-    if (resultMessage) resultMessage.innerHTML = messageHtml;
-    if (resultMessageWrap) resultMessageWrap.classList.toggle("hidden", !messageHtml);
-    resultDisclaimer.textContent = data.disclaimer || "";
+    var predSection = document.createElement("div");
+    predSection.className = "domain-predicted";
+    var predTitle = document.createElement("p");
+    predTitle.className = "alternates-title";
+    predTitle.textContent = "Predicted domains";
+    predSection.appendChild(predTitle);
+    var predList = document.createElement("div");
+    predList.className = "domain-predicted-list";
+    allDomains.forEach(function (domain) {
+      var conf = domainConfidence[domain] || 0;
+      var gInfo = growthInfo[domain] || {};
+      var slopeStr = gInfo.slope != null ? gInfo.slope.toFixed(3) : "—";
+      var slopeClass = slopeDirectionClass(gInfo.slope);
+      var isPrimary = domain === primaryDomain;
+      var row = document.createElement("div");
+      row.className = "domain-predicted-row" + (isPrimary ? " domain-predicted-row-primary" : "");
+      row.innerHTML =
+        "<span class=\"domain-predicted-name\">" + escapeHtml(domain) + (isPrimary ? " <span class=\"domain-badge-primary\">primary</span>" : "") + "</span>" +
+        "<div class=\"domain-predicted-bar-wrap\"><div class=\"domain-predicted-bar\" style=\"width:" + (conf * 100) + "%\"></div></div>" +
+        "<span class=\"domain-predicted-conf\">" + formatPercent(conf) + "</span>" +
+        "<span class=\"growth-badge " + slopeClass + "\" title=\"Slope: " + slopeStr + "\">" + slopeStr + "</span>";
+      predList.appendChild(row);
+    });
+    predSection.appendChild(predList);
+    resultDomain.appendChild(predSection);
+
+    var landscapeSection = document.createElement("div");
+    landscapeSection.className = "domain-landscape";
+    var landscapeToggle = document.createElement("button");
+    landscapeToggle.type = "button";
+    landscapeToggle.className = "domain-landscape-toggle";
+    landscapeToggle.setAttribute("aria-expanded", "false");
+    landscapeToggle.textContent = "All domain scores";
+    var landscapeList = document.createElement("div");
+    landscapeList.className = "domain-landscape-list hidden";
+    landscapeList.setAttribute("role", "region");
+    landscapeList.setAttribute("aria-label", "All 20 domain confidence scores");
+    sortedByConf.forEach(function (domain) {
+      var conf = domainConfidence[domain] || 0;
+      var isPred = allDomains.indexOf(domain) !== -1;
+      var row = document.createElement("div");
+      row.className = "domain-landscape-row" + (isPred ? " domain-landscape-row-predicted" : "");
+      row.innerHTML =
+        "<span class=\"domain-landscape-name\">" + escapeHtml(domain) + "</span>" +
+        "<div class=\"domain-landscape-bar-wrap\"><div class=\"domain-landscape-bar\" style=\"width:" + (conf * 100) + "%\"></div></div>" +
+        "<span class=\"domain-landscape-conf\">" + formatPercent(conf) + "</span>";
+      landscapeList.appendChild(row);
+    });
+    landscapeToggle.addEventListener("click", function () {
+      landscapeList.classList.toggle("hidden");
+      landscapeToggle.setAttribute("aria-expanded", String(!landscapeList.classList.contains("hidden")));
+    });
+    landscapeSection.appendChild(landscapeToggle);
+    landscapeSection.appendChild(landscapeList);
+    resultDomain.appendChild(landscapeSection);
+
+    // ——— Growth card: per-domain rows with slope + R² ———
+    resultGrowth.innerHTML = "";
+    var growthTitle = document.createElement("p");
+    growthTitle.className = "growth-label";
+    growthTitle.textContent = "Growth Trends";
+    resultGrowth.appendChild(growthTitle);
+    var growthList = document.createElement("div");
+    growthList.className = "growth-trends-list";
+    allDomains.forEach(function (domain) {
+      var gInfo = growthInfo[domain] || {};
+      var slope = gInfo.slope;
+      var r2 = gInfo.r2;
+      var slopeStr = slope != null ? slope.toFixed(3) : "—";
+      var r2Str = r2 != null ? r2.toFixed(3) : "—";
+      var r2Pct = r2 != null ? Math.min(100, r2 * 100) : 0;
+      var row = document.createElement("div");
+      row.className = "growth-trend-row";
+      row.innerHTML =
+        "<span class=\"growth-trend-domain\">" + escapeHtml(domain) + "</span>" +
+        "<div class=\"growth-trend-metrics\">" +
+        "<span class=\"growth-score-wrap " + slopeDirectionClass(slope) + "\"><span class=\"growth-trend-slope-label\">Slope</span><span class=\"growth-score-value\">" + slopeStr + "</span></span>" +
+        "<div class=\"growth-trend-r2\"><span class=\"growth-trend-r2-label\">R² " + r2FitLabel(r2) + "</span><div class=\"growth-trend-r2-bar-wrap\"><div class=\"growth-trend-r2-bar\" style=\"width:" + r2Pct + "%\"></div></div><span class=\"growth-trend-r2-value\">" + r2Str + "</span></div>" +
+        "</div>";
+      growthList.appendChild(row);
+    });
+    resultGrowth.appendChild(growthList);
+
+    // ——— Model info card: 2-column metric tiles ———
+    if (resultModelInfo) {
+      resultModelInfo.innerHTML = "";
+      var modelInfo = data.model_info || {};
+      if (Object.keys(modelInfo).length > 0) {
+        resultModelInfo.classList.remove("hidden");
+        var modelTitle = document.createElement("p");
+        modelTitle.className = "model-info-title";
+        modelTitle.textContent = "Model Performance Metrics";
+        resultModelInfo.appendChild(modelTitle);
+        var tiles = document.createElement("div");
+        tiles.className = "model-metrics-grid";
+        var metrics = [
+          { key: "subset_accuracy", label: "Subset Accuracy" },
+          { key: "hamming_loss", label: "Hamming Loss" },
+          { key: "macro_f1", label: "Macro F1" },
+          { key: "micro_f1", label: "Micro F1" },
+          { key: "samples_f1", label: "Samples F1" },
+          { key: "cv_micro_f1_mean", label: "CV Micro F1 (mean)" },
+          { key: "cv_micro_f1_std", label: "CV Micro F1 (std)" }
+        ];
+        metrics.forEach(function (m) {
+          if (modelInfo[m.key] == null) return;
+          var tile = document.createElement("div");
+          tile.className = "model-metric-tile";
+          tile.innerHTML = "<span class=\"model-metric-label\">" + m.label + "</span><span class=\"model-metric-value\">" + modelInfo[m.key].toFixed(4) + "</span>";
+          tiles.appendChild(tile);
+        });
+        resultModelInfo.appendChild(tiles);
+      } else {
+        resultModelInfo.classList.add("hidden");
+      }
+    }
   }
 
   document.querySelectorAll(".btn-example").forEach(function (btn) {
