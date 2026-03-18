@@ -7,7 +7,6 @@ import '../theme.dart';
 /// Mobile: same card style, data shown as simple bars/text (no Chart.js).
 const _chartCardPadding = 16.0;
 const _chartWrapTallHeight = 240.0;
-const _chartWrapHeight = 200.0;
 const _chartScatterHeight = 220.0;
 
 /// Domain confidence bar chart card (web: chart-confidence).
@@ -21,10 +20,12 @@ class ChartConfidenceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = result.domain.isEmpty ? 'Primary' : result.domain;
-    final primaryConf = result.domainConfidence;
-    final alts = result.alternateDomains;
-    final labels = [primary]..addAll(alts.map((a) => a.name));
-    final values = [primaryConf]..addAll(alts.map((a) => a.confidence));
+    final labels = result.allDomains.isNotEmpty
+        ? result.allDomains
+        : [primary, ...result.alternateDomains.map((a) => a.name)];
+    final values = labels
+        .map((d) => result.domainConfidenceMap[d] ?? 0)
+        .toList();
 
     return Container(
       height: _chartWrapTallHeight,
@@ -162,9 +163,9 @@ class ChartScatterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = result.domain.isEmpty ? 'Primary' : result.domain;
-    final conf = result.domainConfidence;
-    final growth = result.domainGrowthScore;
-    final alts = result.alternateDomains;
+    final labels = result.allDomains.isNotEmpty
+        ? result.allDomains
+        : [primary, ...result.alternateDomains.map((a) => a.name)];
 
     return Container(
       height: _chartScatterHeight,
@@ -182,8 +183,14 @@ class ChartScatterCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _pointRow(primary, conf, growth, isPrimary: true),
-          ...alts.map((a) => _pointRow(a.name, a.confidence, 0, isPrimary: false)),
+          ...labels.map(
+            (label) => _pointRow(
+              label,
+              result.domainConfidenceMap[label] ?? 0,
+              (result.growthInfo[label]?.slope ?? 0).clamp(0.0, 1.0).toDouble(),
+              isPrimary: label == primary,
+            ),
+          ),
         ],
       ),
     );

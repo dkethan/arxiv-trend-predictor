@@ -13,10 +13,24 @@ class VizNumbersCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final alts = result.alternateDomains;
-    final growthPct = '${(result.domainGrowthScore * 100).toStringAsFixed(1)}%';
+    final predicted = result.allDomains.isNotEmpty
+        ? result.allDomains
+        : [result.domain, ...result.alternateDomains.map((a) => a.name)];
+    final growthByPredicted = predicted
+        .map((d) => MapEntry(d, result.growthInfo[d]?.slope ?? -1))
+        .toList();
+    growthByPredicted.sort((a, b) => b.value.compareTo(a.value));
+    final topGrowth = growthByPredicted.isNotEmpty && growthByPredicted.first.value >= 0
+        ? growthByPredicted.first
+        : null;
+    final avgConfidence = predicted.isEmpty
+        ? 0.0
+        : predicted
+                .map((d) => result.domainConfidenceMap[d] ?? 0)
+                .reduce((a, b) => a + b) /
+            predicted.length;
+    final primaryCode = _abbreviateDomain(result.domain.isEmpty ? 'Primary' : result.domain);
 
-    // Web: .viz-numbers padding 1rem 1.25rem
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -34,46 +48,105 @@ class VizNumbersCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          _line(
-            result.domain.isEmpty ? 'Primary' : result.domain,
-            _pct(result.domainConfidence),
-            bold: true,
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _tile(
+                title: 'Primary',
+                big: primaryCode,
+                sub: result.domain,
+                value: _pct(result.domainConfidence),
+              ),
+              _tile(
+                title: 'Top growth',
+                value: topGrowth == null
+                    ? '—'
+                    : '${topGrowth.key} (${topGrowth.value.toStringAsFixed(3)})',
+              ),
+              _tile(
+                title: 'Domains',
+                value: '${predicted.length} predicted',
+              ),
+              _tile(
+                title: 'Avg confidence',
+                value: _pct(avgConfidence),
+                growth: true,
+              ),
+            ],
           ),
-          ...alts.map((a) => _line(a.name, _pct(a.confidence))),
-          _line('Growth score:', growthPct, growth: true),
         ],
       ),
     );
   }
 
-  Widget _line(String label, String value, {bool bold = false, bool growth = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: RichText(
-        text: TextSpan(
-          style: const TextStyle(
-            fontSize: 14.4,
-            color: AppColors.text,
-            height: 1.6,
-          ),
-          children: [
-            TextSpan(
-              text: label,
-              style: TextStyle(
-                fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-              ),
+  String _abbreviateDomain(String domain) {
+    final words = domain.split(RegExp(r'[\s/_-]+')).where((w) => w.isNotEmpty).toList();
+    if (words.length >= 2) {
+      final letters = words.map((w) => w[0].toUpperCase()).join();
+      final maxLen = letters.length < 5 ? letters.length : 5;
+      return letters.substring(0, maxLen);
+    }
+    return domain.length <= 8 ? domain.toUpperCase() : domain.substring(0, 8).toUpperCase();
+  }
+
+  Widget _tile({
+    required String title,
+    String? big,
+    String? sub,
+    required String value,
+    bool growth = false,
+  }) {
+    return Container(
+      width: 150,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.4,
             ),
-            const TextSpan(text: ' '),
-            TextSpan(
-              text: value,
-              style: TextStyle(
-                fontFamily: GoogleFonts.jetBrainsMono().fontFamily,
-                fontWeight: FontWeight.w600,
-                color: growth ? AppColors.success : AppColors.text,
+          ),
+          if (big != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              big,
+              style: GoogleFonts.syne(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: AppColors.text,
               ),
             ),
           ],
-        ),
+          if (sub != null && sub.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              sub,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 13,
+              color: growth ? AppColors.success : AppColors.text,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,11 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../models/advisor_response.dart';
 import '../theme.dart';
 import '../widgets/domain_card.dart';
 import '../widgets/growth_card.dart';
-import '../widgets/keywords_card.dart';
 import '../widgets/viz_numbers_card.dart';
 import '../widgets/insights_chart_cards.dart';
 
@@ -17,6 +20,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static final Uri _projectUrl =
+      Uri.parse('https://github.com/dkethan/arxiv-trend-predictor');
+
   final _titleController = TextEditingController();
   final _abstractController = TextEditingController();
   final _scrollController = ScrollController();
@@ -88,6 +94,135 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _openProjectLink() async {
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surfaceElevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 42,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.textMuted.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            const SizedBox(height: 10),
+            const ListTile(
+              title: Text(
+                'Open Project Link',
+                style: TextStyle(
+                  color: AppColors.text,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                'Choose where to open',
+                style: TextStyle(color: AppColors.textMuted),
+              ),
+            ),
+            _openWithTile(
+              icon: Icons.open_in_browser_rounded,
+              label: 'Default browser',
+              onTap: () async {
+                Navigator.pop(context);
+                await _launchDefaultBrowser();
+              },
+            ),
+            if (Platform.isAndroid) ...[
+              _openWithTile(
+                icon: Icons.public,
+                label: 'Chrome',
+                onTap: () async {
+                  Navigator.pop(context);
+                  final chromeUri = Uri.parse(
+                    'googlechrome://navigate?url=${Uri.encodeComponent(_projectUrl.toString())}',
+                  );
+                  final launched = await launchUrl(
+                    chromeUri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                  if (!launched) await _launchDefaultBrowser();
+                },
+              ),
+              _openWithTile(
+                icon: Icons.travel_explore,
+                label: 'Firefox',
+                onTap: () async {
+                  Navigator.pop(context);
+                  final firefoxUri = Uri.parse(
+                    'firefox://open-url?url=${Uri.encodeComponent(_projectUrl.toString())}',
+                  );
+                  final launched = await launchUrl(
+                    firefoxUri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                  if (!launched) await _launchDefaultBrowser();
+                },
+              ),
+            ],
+            _openWithTile(
+              icon: Icons.copy_rounded,
+              label: 'Copy link',
+              onTap: () async {
+                Navigator.pop(context);
+                await _copyProjectLinkWithMessage();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _openWithTile({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: AppColors.accent),
+      title: Text(
+        label,
+        style: const TextStyle(color: AppColors.text),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Future<void> _launchDefaultBrowser() async {
+    try {
+      final launched = await launchUrl(_projectUrl,
+          mode: LaunchMode.externalApplication);
+      if (!launched) {
+        await _copyProjectLinkWithMessage();
+      }
+    } catch (_) {
+      await _copyProjectLinkWithMessage();
+    }
+  }
+
+  Future<void> _copyProjectLinkWithMessage() async {
+    await Clipboard.setData(ClipboardData(text: _projectUrl.toString()));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Could not open browser here. GitHub link copied to clipboard.',
+        ),
+      ),
+    );
   }
 
   @override
@@ -333,161 +468,43 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Card 1: Domain (web: .domain-card)
         DomainCard(
-          domain: r.domain,
-          confidence: r.domainConfidence,
-          alternateDomains: r.alternateDomains,
+          result: r,
         ),
         const SizedBox(height: 16),
 
         // Card 2: Growth (web: .growth-card)
         GrowthCard(
-          label: r.domainGrowthLabel,
-          score: r.domainGrowthScore,
+          result: r,
         ),
-        const SizedBox(height: 16),
-
-        // Card 3: Keywords (web: .keywords-card)
-        KeywordsCard(keywords: r.suggestedKeywords),
-        const SizedBox(height: 16),
-
-        // Card 4 (last): Summary (web: .result-message-card)
-        if (r.message.isNotEmpty) ...[
-          _buildSummaryCard(r.message),
-          const SizedBox(height: 16),
-        ],
-
-        // Disclaimer (web: .disclaimer — margin 1.25rem 0 0)
-        Padding(
-          padding: const EdgeInsets.only(top: 20),
-          child: Text(
-            r.disclaimer,
-            style: const TextStyle(
-              fontSize: 12.8,
-              color: AppColors.textMuted,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSummaryCard(String message) {
-    // Web: .result-message-card — padding 1.25rem 1.5rem, title 0.7rem uppercase
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      decoration: appCardDecoration,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'SUMMARY',
-            style: GoogleFonts.outfit(
-              fontSize: 11.2,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.08 * 11.2,
-              color: AppColors.textMuted,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildSummaryMessage(message),
-        ],
-      ),
-    );
-  }
-
-  /// Parses message like web renderMessage: numbered lines or sentence split; ** = accent.
-  List<String> _parseMessageItems(String text) {
-    if (text.trim().isEmpty) return [];
-    final rawLines =
-        text.split('\n').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-    if (rawLines.isEmpty) return [];
-
-    final numbered = RegExp(r'^\d+\.\s*.+');
-    final allNumbered =
-        rawLines.length > 1 && rawLines.every((line) => numbered.hasMatch(line));
-
-    if (allNumbered) {
-      final stripNum = RegExp(r'^\d+\.\s*(.*)$');
-      return rawLines.map((line) {
-        final m = stripNum.firstMatch(line);
-        return (m != null ? m.group(1) ?? line : line);
-      }).toList();
-    }
-
-    final paragraph = rawLines.join(' ');
-    final sentenceEnd = RegExp(r'\.\s+(?=[A-Z])');
-    final sentences = paragraph.split(sentenceEnd).map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-    return sentences.map((s) => s.endsWith('.') ? s : '$s.').toList();
-  }
-
-  InlineSpan _parseBoldSpans(String segment) {
-    final spans = <InlineSpan>[];
-    final regex = RegExp(r'\*\*(.+?)\*\*');
-    int lastEnd = 0;
-    for (final match in regex.allMatches(segment)) {
-      if (match.start > lastEnd) {
-        spans.add(TextSpan(text: segment.substring(lastEnd, match.start)));
-      }
-      spans.add(TextSpan(
-        text: match.group(1),
-        style: const TextStyle(
-          color: AppColors.accent,
-          fontWeight: FontWeight.w600,
-        ),
-      ));
-      lastEnd = match.end;
-    }
-    if (lastEnd < segment.length) {
-      spans.add(TextSpan(text: segment.substring(lastEnd)));
-    }
-    return spans.isEmpty ? TextSpan(text: segment) : TextSpan(children: spans);
-  }
-
-  Widget _buildSummaryMessage(String message) {
-    final items = _parseMessageItems(message);
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    // Web: .result-message-list — padding-left 1.35rem, decimal; li margin-bottom 0.5rem
-    const baseStyle = TextStyle(
-      fontSize: 15.8,
-      color: AppColors.text,
-      height: 1.7,
-    );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var i = 0; i < items.length; i++)
-          Padding(
-            padding: const EdgeInsets.only(left: 21.6, bottom: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 20,
-                  child: Text('${i + 1}.', style: baseStyle),
-                ),
-                Expanded(
-                  child: RichText(
-                    text: TextSpan(
-                      style: baseStyle,
-                      children: [ _parseBoldSpans(items[i]) ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
       ],
     );
   }
 
   Widget _buildFooter() {
-    return const Center(
-      child: Text(
-        'Powered by arxiv-trend-predictor API',
-        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+    return Center(
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          const Text(
+            'Want to know more?',
+            style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+          ),
+          GestureDetector(
+            onTap: _openProjectLink,
+            child: const Text(
+              'Project Link',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.accent,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
