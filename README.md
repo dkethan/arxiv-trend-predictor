@@ -38,9 +38,6 @@ python -m backend.main
 
 Use [README_FULL_FLOW.md](README_FULL_FLOW.md) for full implementation and updated pipeline steps.
 
-Quick links:
-- Full flow doc: [README_FULL_FLOW.md](README_FULL_FLOW.md)
-
 ## License
 
-MIT License ([LICENSE](LICENSE)).
+MIT License [LICENSE](LICENSE).
