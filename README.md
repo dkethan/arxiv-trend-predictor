@@ -2,6 +2,10 @@
 
 Simple overview of the project.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+Full guide: [README_FULL_FLOW.md](README_FULL_FLOW.md)
+
 ## Collaborators
 
 1. **Jay Sri (Jayashree Johnson)** - [https://github.com/jayashreejohnson](https://github.com/jayashreejohnson)
