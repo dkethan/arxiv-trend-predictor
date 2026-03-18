@@ -2,14 +2,12 @@
 
 Simple overview of the project.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
 Full guide: [README_FULL_FLOW.md](README_FULL_FLOW.md)
 
 ## Collaborators
 
-1. **Jay Sri (Jayashree Johnson)** - [https://github.com/jayashreejohnson](https://github.com/jayashreejohnson)
-2. **Kamal** - [https://github.com/kamaldomandula](https://github.com/kamaldomandula)
+1. **Jayashree Johnson** - [https://github.com/jayashreejohnson](https://github.com/jayashreejohnson)
+2. **Kamal Domandula** - [https://github.com/kamaldomandula](https://github.com/kamaldomandula)
 3. **Kethan Dosapati** - [https://github.com/dkethan](https://github.com/dkethan)
 
 `arxiv-trend-predictor` helps you:
@@ -38,8 +36,11 @@ python -m backend.main
 
 ## Want full details and project flow?
 
-Use `README_FULL_FLOW.md` for full implementation and updated pipeline steps.
+Use [README_FULL_FLOW.md](README_FULL_FLOW.md) for full implementation and updated pipeline steps.
+
+Quick links:
+- Full flow doc: [README_FULL_FLOW.md](README_FULL_FLOW.md)
 
 ## License
 
-MIT License (`LICENSE`).
+MIT License ([LICENSE](LICENSE)).
