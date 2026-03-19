@@ -456,12 +456,50 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        // 3 chart cards (web: .charts-row — chart-confidence, chart-growth, chart-scatter)
-        ChartConfidenceCard(result: r),
-        const SizedBox(height: 16),
-        ChartGrowthCard(result: r),
-        const SizedBox(height: 16),
-        ChartScatterCard(result: r),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            final confidenceCard = ChartConfidenceCard(
+              result: r,
+            );
+            final growthScoreCard = ChartGrowthCard(
+              result: r,
+            );
+            final confidenceVsGrowthCard = SizedBox(
+              height: 260,
+              child: ChartScatterCard(
+                result: r,
+              ),
+            );
+
+            if (isMobile) {
+              return Column(
+                children: [
+                  confidenceCard,
+                  const SizedBox(height: 12),
+                  growthScoreCard,
+                  const SizedBox(height: 12),
+                  confidenceVsGrowthCard,
+                ],
+              );
+            }
+
+            return Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: confidenceCard),
+                    const SizedBox(width: 12),
+                    Expanded(child: growthScoreCard),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                confidenceVsGrowthCard,
+              ],
+            );
+          },
+        ),
         const SizedBox(height: 16),
         VizNumbersCard(result: r),
         const SizedBox(height: 16),
