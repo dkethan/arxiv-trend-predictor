@@ -28,7 +28,7 @@ class VizNumbersCard extends StatelessWidget {
                 .map((d) => result.domainConfidenceMap[d] ?? 0)
                 .reduce((a, b) => a + b) /
             predicted.length;
-    final primaryCode = _abbreviateDomain(result.domain.isEmpty ? 'Primary' : result.domain);
+    final primaryCode = (result.domain.isEmpty ? 'Primary' : result.domain).toUpperCase();
     final bestR2ByPredicted = predicted
         .map((d) => MapEntry(d, result.growthInfo[d]?.r2 ?? -1))
         .toList();
@@ -76,30 +76,21 @@ class VizNumbersCard extends StatelessWidget {
                           children: [
                             const _StatLabel('PRIMARY'),
                             const SizedBox(height: 8),
-                            Text(
-                              primaryCode,
-                              style: GoogleFonts.syne(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w700,
-                                height: 1,
-                                color: AppColors.text,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              result.domain.isEmpty ? 'Primary Domain' : result.domain,
-                              style: GoogleFonts.outfit(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.textMuted,
-                                height: 1.2,
-                              ),
-                            ),
+                            _buildPrimaryCodeText(primaryCode),
                           ],
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const Text(
+                              'confidence',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
                             Text(
                               _pct(result.domainConfidence),
                               style: GoogleFonts.jetBrainsMono(
@@ -107,15 +98,6 @@ class VizNumbersCard extends StatelessWidget {
                                 fontWeight: FontWeight.w700,
                                 height: 1,
                                 color: AppColors.text,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'confidence',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textMuted,
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
@@ -260,14 +242,57 @@ class VizNumbersCard extends StatelessWidget {
     );
   }
 
-  String _abbreviateDomain(String domain) {
-    final words = domain.split(RegExp(r'[\s/_-]+')).where((w) => w.isNotEmpty).toList();
-    if (words.length >= 2) {
-      final letters = words.map((w) => w[0].toUpperCase()).join();
-      final maxLen = letters.length < 5 ? letters.length : 5;
-      return letters.substring(0, maxLen);
+  double _primaryCodeFontSize(String value) {
+    final len = value.trim().length;
+    final hasMultipleWords = value.trim().contains(RegExp(r'\s+'));
+
+    if (hasMultipleWords) {
+      if (len <= 12) return 28;
+      if (len <= 18) return 22;
+      if (len <= 24) return 18;
+      return 16;
     }
-    return domain.length <= 8 ? domain.toUpperCase() : domain.substring(0, 8).toUpperCase();
+
+    if (len <= 6) return 40;
+    if (len <= 8) return 32;
+    if (len <= 10) return 28;
+    if (len <= 14) return 22;
+    return 18;
+  }
+
+  Widget _buildPrimaryCodeText(String value) {
+    final hasMultipleWords = value.trim().contains(RegExp(r'\s+'));
+    final style = GoogleFonts.syne(
+      fontSize: _primaryCodeFontSize(value),
+      fontWeight: FontWeight.w700,
+      height: 0.95,
+      color: AppColors.text,
+    );
+
+    if (hasMultipleWords) {
+      return Text(
+        value,
+        style: style,
+        maxLines: 3,
+        softWrap: true,
+        overflow: TextOverflow.clip,
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text(
+          value,
+          style: style.copyWith(fontSize: 52),
+          maxLines: 1,
+          softWrap: false,
+        ),
+      ),
+    );
   }
 }
 

@@ -297,17 +297,20 @@ class ChartScatterCard extends StatelessWidget {
                     ),
                   ),
                   leftTitles: AxisTitles(
-                    axisNameWidget: RotatedBox(
-                      quarterTurns: 3,
-                      child: Text(
-                        'Growth (normalized slope)',
-                        style: GoogleFonts.outfit(
-                          fontSize: 11,
-                          color: AppColors.textMuted,
+                    axisNameWidget: Align(
+                      alignment: Alignment.topCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text(
+                          'Growth',
+                          style: GoogleFonts.outfit(
+                            fontSize: 10,
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ),
                     ),
-                    axisNameSize: 48,
+                    axisNameSize: 40,
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 34,
