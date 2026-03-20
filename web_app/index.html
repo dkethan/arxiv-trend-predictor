@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-api-base="https://arxiv-trend-predictor-api-001.onrender.com">
+<html lang="en" data-api-base="https://eidon-api-001.onrender.com">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -45,13 +45,15 @@
         </div>
         <div class="form-actions">
           <button type="submit" id="submit-btn" class="btn btn-primary">
-            Get advice
+            Run analysis
           </button>
-          <button type="button" class="btn btn-example" data-example="1">Eg 1 — Transformers</button>
-          <button type="button" class="btn btn-example" data-example="2">Eg 2 — NeRF</button>
+          <div class="example-actions">
+            <button type="button" class="btn btn-example" data-example="1">Eg 1 — Transformers</button>
+            <button type="button" class="btn btn-example" data-example="2">Eg 2 — NeRF</button>
+          </div>
         </div>
       </form>
-      <p class="form-note">Click <strong>Get advice</strong> to get advice. Click <strong>Eg 1 — Transformers</strong> or <strong>Eg 2 — NeRF</strong> to fill the title and abstract automatically with an example.</p>
+      <p class="form-note">Click <strong>Run analysis</strong> to run analysis. Click <strong>Eg 1 — Transformers</strong> or <strong>Eg 2 — NeRF</strong> to fill the title and abstract automatically with an example.</p>
       <p id="status" class="status status-below-note" aria-live="polite"></p>
 
       <section id="result" class="result hidden" aria-live="polite">
@@ -82,11 +84,12 @@
       </section>
     </main>
 
-    <footer class="footer">
-      <p>
-        Want to know more?
+    <footer class="footer footer-compact footer-bar">
+      <p class="footer-links footer-links-one-line">
+        <a href="creators.html">Creators</a>
+        <span aria-hidden="true">·</span>
         <a href="https://github.com/dkethan/arxiv-trend-predictor" target="_blank" rel="noopener">Project Link</a>
-        ·
+        <span aria-hidden="true">·</span>
         <a href="privacy-policy.html">Privacy Policy</a>
       </p>
     </footer>

@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../models/advisor_response.dart';
+import '../screens/creators_screen.dart';
+import '../screens/privacy_policy_screen.dart';
 import '../theme.dart';
 import '../widgets/domain_card.dart';
 import '../widgets/growth_card.dart';
@@ -225,13 +227,31 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openCreatorsScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const CreatorsScreen(),
+      ),
+    );
+  }
+
+  void _openPrivacyPolicyScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const PrivacyPolicyScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: _buildFooterBar(),
       body: SingleChildScrollView(
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
         child: SafeArea(
+          bottom: false,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -249,10 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (_error != null) _buildError(),
               // Results
               if (_result != null) _buildResults(),
-              const SizedBox(height: 40),
-              // Footer
-              _buildFooter(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 80),
             ],
           ),
         ),
@@ -325,22 +342,28 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 20),
         // Buttons row
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _PrimaryButton(
-              label: 'Get advice',
+              label: 'Run analysis',
               isLoading: _isLoading,
               onPressed: _isLoading ? null : _submit,
             ),
-            _ExampleButton(
-              label: 'Ex 1 — Transformers',
-              onPressed: () => _fillExample(1),
-            ),
-            _ExampleButton(
-              label: 'Ex 2 — NeRF',
-              onPressed: () => _fillExample(2),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                _ExampleButton(
+                  label: 'Ex 1 — Transformers',
+                  onPressed: () => _fillExample(1),
+                ),
+                _ExampleButton(
+                  label: 'Ex 2 — NeRF',
+                  onPressed: () => _fillExample(2),
+                ),
+              ],
             ),
           ],
         ),
@@ -361,11 +384,11 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const TextSpan(text: 'Click '),
             const TextSpan(
-              text: 'Get advice',
+              text: 'Run analysis',
               style: TextStyle(
                   color: AppColors.text, fontWeight: FontWeight.w600),
             ),
-            const TextSpan(text: ' to get advice. Click '),
+            const TextSpan(text: ' to run analysis. Click '),
             const TextSpan(
               text: 'Ex 1 — Transformers',
               style: TextStyle(
@@ -518,31 +541,40 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFooter() {
-    return Center(
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 6,
-        runSpacing: 4,
-        children: [
-          const Text(
-            'Want to know more?',
-            style: TextStyle(fontSize: 12, color: AppColors.textMuted),
-          ),
-          GestureDetector(
-            onTap: _openProjectLink,
-            child: const Text(
-              'Project Link',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.accent,
-                fontWeight: FontWeight.w600,
-                decoration: TextDecoration.underline,
-              ),
-            ),
+  Widget _buildFooterBar() {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    return Container(
+      padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated.withValues(alpha: 0.96),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.32),
+            blurRadius: 16,
+            offset: const Offset(0, -3),
           ),
         ],
+      ),
+      child: SizedBox(
+        height: 56,
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _FooterLink(label: 'Creators', onTap: _openCreatorsScreen),
+                const _FooterDot(),
+                _FooterLink(label: 'Project Link', onTap: _openProjectLink),
+                const _FooterDot(),
+                _FooterLink(
+                  label: 'Privacy Policy',
+                  onTap: _openPrivacyPolicyScreen,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -648,6 +680,49 @@ class _ExampleButton extends StatelessWidget {
         textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
       ),
       child: Text(label),
+    );
+  }
+}
+
+class _FooterLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _FooterLink({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 13,
+          color: AppColors.accent,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _FooterDot extends StatelessWidget {
+  const _FooterDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 6),
+      child: Text(
+        '·',
+        style: TextStyle(
+          fontSize: 13,
+          color: AppColors.textMuted,
+        ),
+      ),
     );
   }
 }
