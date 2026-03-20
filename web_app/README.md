@@ -41,8 +41,14 @@ Add a **Static Site** in the Render dashboard:
 
 The frontend will call the API URL you deployed (e.g. `https://arxiv-trend-predictor-api-001.onrender.com`). No build step required.
 
+Privacy policy URL (after deploy):
+
+- `https://<your-static-site-domain>/privacy-policy.html`
+- Use this URL in Google Play Console for the app privacy policy field.
+
 ## Files
 
 - `index.html` – Form and result layout
+- `privacy-policy.html` – Public privacy policy page for app store submission
 - `styles.css` – Layout and theme
 - `app.js` – Form submit, API call, result rendering
