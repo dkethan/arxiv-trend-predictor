@@ -1,7 +1,7 @@
 (function () {
   const API_BASE =
     document.documentElement.dataset.apiBase ||
-    "https://arxiv-trend-predictor-api-001.onrender.com";
+    "https://eidon-api-001.onrender.com";
 
   const CHART_COLORS = {
     accent: "#2ec4b6",
