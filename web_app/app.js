@@ -31,7 +31,6 @@
   const vizNumbers = document.getElementById("viz-numbers");
   const resultDomain = document.getElementById("result-domain");
   const resultGrowth = document.getElementById("result-growth");
-  const resultModelInfo = document.getElementById("result-model-info");
   const errorSection = document.getElementById("error");
   const errorMessage = document.getElementById("error-message");
 
@@ -477,39 +476,6 @@
     });
     resultGrowth.appendChild(growthList);
 
-    // ——— Model info card: 2-column metric tiles ———
-    if (resultModelInfo) {
-      resultModelInfo.innerHTML = "";
-      var modelInfo = data.model_info || {};
-      if (Object.keys(modelInfo).length > 0) {
-        resultModelInfo.classList.remove("hidden");
-        var modelTitle = document.createElement("p");
-        modelTitle.className = "model-info-title";
-        modelTitle.textContent = "Model Performance Metrics";
-        resultModelInfo.appendChild(modelTitle);
-        var tiles = document.createElement("div");
-        tiles.className = "model-metrics-grid";
-        var metrics = [
-          { key: "subset_accuracy", label: "Subset Accuracy" },
-          { key: "hamming_loss", label: "Hamming Loss" },
-          { key: "macro_f1", label: "Macro F1" },
-          { key: "micro_f1", label: "Micro F1" },
-          { key: "samples_f1", label: "Samples F1" },
-          { key: "cv_micro_f1_mean", label: "CV Micro F1 (mean)" },
-          { key: "cv_micro_f1_std", label: "CV Micro F1 (std)" }
-        ];
-        metrics.forEach(function (m) {
-          if (modelInfo[m.key] == null) return;
-          var tile = document.createElement("div");
-          tile.className = "model-metric-tile";
-          tile.innerHTML = "<span class=\"model-metric-label\">" + m.label + "</span><span class=\"model-metric-value\">" + modelInfo[m.key].toFixed(4) + "</span>";
-          tiles.appendChild(tile);
-        });
-        resultModelInfo.appendChild(tiles);
-      } else {
-        resultModelInfo.classList.add("hidden");
-      }
-    }
   }
 
   document.querySelectorAll(".btn-example").forEach(function (btn) {

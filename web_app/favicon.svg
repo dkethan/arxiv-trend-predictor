@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <radialGradient id="aurora1" cx="25%" cy="20%" r="70%">
+      <stop offset="0%" stop-color="#A78BFA"/>
+      <stop offset="100%" stop-color="#6D28D9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="aurora2" cx="80%" cy="80%" r="65%">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#0F766E" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="baseBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E1347"/>
+      <stop offset="100%" stop-color="#0D1B2A"/>
+    </linearGradient>
+    <linearGradient id="glassBody" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.07"/>
+    </linearGradient>
+    <linearGradient id="glassBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#A78BFA" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="foldGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0.2"/>
+    </linearGradient>
+    <radialGradient id="dotGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="60%" stop-color="#0D9488"/>
+      <stop offset="100%" stop-color="#0D9488" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="roundClip">
+      <rect width="32" height="32" rx="7"/>
+    </clipPath>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur"/>
+      <feFlood flood-color="#A78BFA" flood-opacity="0.4" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="32" height="32" rx="7" fill="url(#baseBg)"/>
+
+  <g clip-path="url(#roundClip)">
+    <rect width="32" height="32" fill="url(#aurora1)"/>
+    <rect width="32" height="32" fill="url(#aurora2)"/>
+    <ellipse cx="6" cy="6" rx="10" ry="8" fill="#C4B5FD" opacity="0.12"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <path d="M6.5 5.5 L19.5 5.5 L26 12 L26 27.5 Q26 28.5 25 28.5 L7.5 28.5 Q6.5 28.5 6.5 27.5 Z"
+          fill="url(#glassBody)"
+          stroke="url(#glassBorder)"
+          stroke-width="0.6"/>
+    <path d="M19.5 5.5 L19.5 12 L26 12 Z"
+          fill="url(#foldGlass)"
+          stroke="url(#glassBorder)"
+          stroke-width="0.5"/>
+  </g>
+
+  <path d="M8 6.5 L19.5 6.5" stroke="white" stroke-width="0.5" stroke-opacity="0.5" stroke-linecap="round"/>
+
+  <rect x="9" y="15" width="10" height="1" rx="0.5" fill="#2DD4BF" opacity="0.55"/>
+  <rect x="9" y="17.2" width="13.5" height="1" rx="0.5" fill="white" opacity="0.28"/>
+  <rect x="9" y="19.4" width="8.5" height="1" rx="0.5" fill="white" opacity="0.22"/>
+  <rect x="9" y="21.6" width="11.5" height="1" rx="0.5" fill="white" opacity="0.18"/>
+
+  <circle cx="23.5" cy="25.5" r="4.5" fill="none" stroke="#2DD4BF" stroke-width="0.7" opacity="0.3"/>
+  <circle cx="23.5" cy="25.5" r="2.8" fill="none" stroke="#2DD4BF" stroke-width="0.7" opacity="0.55"/>
+  <circle cx="23.5" cy="25.5" r="1.8" fill="url(#dotGlow)" opacity="0.7"/>
+  <circle cx="23.5" cy="25.5" r="1" fill="#CCFBF1"/>
+
+  <circle cx="27.5" cy="5.5" r="0.7" fill="#C4B5FD" opacity="0.7"/>
+  <circle cx="26" cy="4" r="0.4" fill="#2DD4BF" opacity="0.5"/>
+</svg>

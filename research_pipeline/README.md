@@ -1,40 +1,72 @@
-## research_pipeline
+# research_pipeline
 
-This is the **research_pipeline** component (data collection, analysis, model training). All pipeline commands must be run from the **project root** (the folder that contains `research_pipeline/`, `backend/`, etc.). If you are inside `research_pipeline/`, go to the project root with: `cd ..`.
+Updated research/data pipeline for `arxiv-trend-predictor`.
 
-Research pipeline for arxiv-trend-predictor: data collection, analysis, and model training.
+Run every command from the **project root** (the folder containing `backend/`, `research_pipeline/`, `web_app/`, and `mobile_app/`).
 
-This package contains all the offline/experimental components:
+## What is inside
 
-- **scraper/**: arXiv data collection
-- **analysis/**: Trend analysis and statistics
-- **advisor/**: Model training and inference logic
-- **scripts/**: CLI utilities for running the pipeline
+- `scraper/` - collects arXiv paper metadata
+- `analysis/` - temporal trends, keywords, interdisciplinarity, optional clustering
+- `advisor/` - multi-label model training, inference, benchmark, evaluation plots
 
-### Quick start
+## Current pipeline flow
 
-All commands run from the **project root**:
+### 1) Collect data
 
-1. **Collect data**:
-   ```bash
-   python -m research_pipeline.scraper.arxiv_scraper
-   ```
+```bash
+python -m research_pipeline.scraper.arxiv_scraper
+```
 
-2. **Run analysis**:
-   ```bash
-   python -m research_pipeline.analysis.arxiv_analysis
-   ```
+Expected output:
 
-3. **Train model**:
-   ```bash
-   python -m research_pipeline.scripts.run_advisor train
-   ```
+- CSV/JSON files in `data/arxiv_data/`
 
-4. **Use model** (CLI):
-   ```bash
-   python -m research_pipeline.scripts.run_advisor advise "Title" "Abstract"
-   ```
+### 2) Run analysis
 
-The trained models are saved to `backend/models/` and can be served via the FastAPI backend.
+```bash
+python -m research_pipeline.analysis.arxiv_analysis
+```
 
-See `backend/MODEL_USAGE.md` for detailed documentation.
+Expected output:
+
+- `data/analysis_output/analysis_results.json`
+- analysis charts in `data/analysis_output/` (when plotting is enabled)
+
+### 3) Train advisor model
+
+```bash
+python -m research_pipeline.advisor.multi_model_idea_advisor
+```
+
+Expected output in `backend/models/`:
+
+- `domain_classifier.pkl`
+- `label_binarizer.pkl`
+- `model_meta.json`
+- `benchmark_results.json`
+- `temporal_trends.json` and `temporal_trends.pkl`
+- `domain_vectorizer.pkl` (when TF-IDF model wins)
+- `sbert_model_name.pkl` (when SciBERT model wins)
+
+### 4) Generate evaluation report (optional but recommended)
+
+```bash
+python -m research_pipeline.advisor.model_evaluation
+```
+
+Expected output:
+
+- charts and report in `data/analysis_output/evaluation/`
+
+## Quick verification checklist
+
+- Data exists in `data/arxiv_data/`
+- Analysis file exists at `data/analysis_output/analysis_results.json`
+- Trained model files exist in `backend/models/`
+- API can read model files (`python -m backend.main`, then check `/health/ready`)
+
+## Notes
+
+- The old `research_pipeline/scripts/run_advisor` flow is no longer the active command path.
+- Use module entrypoints shown above for the latest pipeline behavior.

@@ -1,7 +1,7 @@
 name: arxiv_trend_mobile
 description: "arXiv Trend Advisor - Predict research trends from your paper."
 publish_to: 'none'
-version: 1.0.0+1
+version: 4.0.0+4
 
 environment:
   sdk: ^3.10.8
@@ -10,12 +10,24 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.2.0
+  fl_chart: ^0.68.0
   google_fonts: ^6.2.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path_android: "assets/icon/ic_launcher_512.png"
+  adaptive_icon_background: "#1A0A4A"
+  adaptive_icon_foreground: "assets/icon/ic_launcher_512.png"
+  adaptive_icon_foreground_inset: 15
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true
