@@ -73,7 +73,7 @@ class CreatorsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Meet the contributors behind arXiv Trend Advisor.',
+                'Built to explore research trends through data and machine learning.',
                 style: TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 14,

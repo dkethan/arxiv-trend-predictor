@@ -342,22 +342,28 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 20),
         // Buttons row
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _PrimaryButton(
-              label: 'Get advice',
+              label: 'Run analysis',
               isLoading: _isLoading,
               onPressed: _isLoading ? null : _submit,
             ),
-            _ExampleButton(
-              label: 'Ex 1 — Transformers',
-              onPressed: () => _fillExample(1),
-            ),
-            _ExampleButton(
-              label: 'Ex 2 — NeRF',
-              onPressed: () => _fillExample(2),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                _ExampleButton(
+                  label: 'Ex 1 — Transformers',
+                  onPressed: () => _fillExample(1),
+                ),
+                _ExampleButton(
+                  label: 'Ex 2 — NeRF',
+                  onPressed: () => _fillExample(2),
+                ),
+              ],
             ),
           ],
         ),
@@ -378,11 +384,11 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const TextSpan(text: 'Click '),
             const TextSpan(
-              text: 'Get advice',
+              text: 'Run analysis',
               style: TextStyle(
                   color: AppColors.text, fontWeight: FontWeight.w600),
             ),
-            const TextSpan(text: ' to get advice. Click '),
+            const TextSpan(text: ' to run analysis. Click '),
             const TextSpan(
               text: 'Ex 1 — Transformers',
               style: TextStyle(
