@@ -183,10 +183,14 @@ body::after {
 }
 
 .example-actions {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
-  flex-wrap: wrap;
+}
+
+.example-actions .btn-example {
+  width: 100%;
+  white-space: nowrap;
 }
 
 .btn {
@@ -1200,6 +1204,10 @@ body::after {
 }
 
 @media (max-width: 560px) {
+  .example-actions {
+    grid-template-columns: 1fr;
+  }
+
   .contributor-item {
     grid-template-columns: 1fr;
   }
