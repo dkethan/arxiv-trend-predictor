@@ -245,32 +245,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTabletWidth = screenWidth >= 768;
+    final horizontalPadding = isTabletWidth ? 64.0 : 20.0;
+    final maxContentWidth = isTabletWidth ? 600.0 : 680.0;
+
     return Scaffold(
       bottomNavigationBar: _buildFooterBar(),
       body: SingleChildScrollView(
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 0),
         child: SafeArea(
           bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
-              // Header
-              _buildHeader(),
-              const SizedBox(height: 32),
-              // Form
-              _buildForm(),
-              const SizedBox(height: 8),
-              _buildFormNote(),
-              // Status
-              if (_isLoading) _buildStatus(),
-              // Error
-              if (_error != null) _buildError(),
-              // Results
-              if (_result != null) _buildResults(),
-              const SizedBox(height: 80),
-            ],
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxContentWidth),
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 40),
+                    // Header
+                    _buildHeader(),
+                    const SizedBox(height: 32),
+                    // Form
+                    _buildForm(),
+                    const SizedBox(height: 8),
+                    _buildFormNote(),
+                    // Status
+                    if (_isLoading) _buildStatus(),
+                    // Error
+                    if (_error != null) _buildError(),
+                    // Results
+                    if (_result != null) _buildResults(),
+                    const SizedBox(height: 80),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -509,13 +522,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return Column(
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: confidenceCard),
-                    const SizedBox(width: 12),
-                    Expanded(child: growthScoreCard),
-                  ],
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: confidenceCard),
+                      const SizedBox(width: 12),
+                      Expanded(child: growthScoreCard),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
                 confidenceVsGrowthCard,

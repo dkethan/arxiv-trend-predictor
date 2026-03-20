@@ -1119,8 +1119,6 @@ body::after {
   height: 108px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(46, 196, 182, 0.45);
-  box-shadow: 0 0 18px rgba(46, 196, 182, 0.2);
   align-self: center;
 }
 

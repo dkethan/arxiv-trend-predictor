@@ -60,6 +60,11 @@ class CreatorsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTabletWidth = screenWidth >= 768;
+    final horizontalPadding = isTabletWidth ? 64.0 : 20.0;
+    final maxContentWidth = isTabletWidth ? 600.0 : 680.0;
+
     return Scaffold(
       bottomNavigationBar: _buildFooterBar(context),
       appBar: AppBar(
@@ -68,48 +73,56 @@ class CreatorsScreen extends StatelessWidget {
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 88),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                  'Meet the contributors behind arXiv Trend Advisor.',
-                style: TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
+          padding: EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 88),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxContentWidth),
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Meet the contributors behind arXiv Trend Advisor.',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ..._creators.map(
+                      (creator) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _CreatorCard(
+                          creator: creator,
+                          onOpenGithub: () => _openExternal(
+                            context,
+                            url: creator.githubUrl,
+                            fallbackMessage: 'Could not open GitHub profile.',
+                          ),
+                          onOpenLinkedIn: () => _openExternal(
+                            context,
+                            url: creator.linkedInUrl,
+                            fallbackMessage: 'Could not open LinkedIn profile.',
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Center(
+                      child: Text(
+                        'Built to explore research trends through data and machine learning.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-                const SizedBox(height: 16),
-              ..._creators.map(
-                (creator) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _CreatorCard(
-                    creator: creator,
-                    onOpenGithub: () => _openExternal(
-                      context,
-                      url: creator.githubUrl,
-                      fallbackMessage: 'Could not open GitHub profile.',
-                    ),
-                    onOpenLinkedIn: () => _openExternal(
-                      context,
-                      url: creator.linkedInUrl,
-                      fallbackMessage: 'Could not open LinkedIn profile.',
-                    ),
-                  ),
-                ),
-              ),
-                const SizedBox(height: 4),
-                const Center(
-                  child: Text(
-                    'Built to explore research trends through data and machine learning.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
       ),
