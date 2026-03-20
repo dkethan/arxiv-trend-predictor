@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: arxiv-trend-predictor-api-001
+    name: eidon-api-001
     runtime: python
     plan: free
     branch: feature/render-01
@@ -9,7 +9,7 @@ services:
     healthCheckPath: /health
 
   - type: web
-    name: arxiv-trend-predictor-web-001
+    name: eidon-web-001
     runtime: static
     branch: feature/render-01
     staticPublishPath: web_app

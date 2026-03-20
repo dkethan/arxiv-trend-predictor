@@ -19,7 +19,7 @@ Static frontend for the arxiv-trend-predictor API. Enter a paper title (and opti
    npx serve -l 8080
    ```
 
-3. Open **http://localhost:8080** in your browser. The app calls the live API at `https://arxiv-trend-predictor-api-001.onrender.com` by default.
+3. Open **http://localhost:8080** in your browser. The app calls the live API at `https://eidon-api-001.onrender.com` by default.
 
 ## Use a different API URL
 
@@ -39,7 +39,7 @@ Add a **Static Site** in the Render dashboard:
 - **Publish Directory:** `web_app`
 - **Root Directory:** project root (or leave blank if `web_app` is the repo root)
 
-The frontend will call the API URL you deployed (e.g. `https://arxiv-trend-predictor-api-001.onrender.com`). No build step required.
+The frontend will call the API URL you deployed (e.g. `https://eidon-api-001.onrender.com`). No build step required.
 
 Privacy policy URL (after deploy):
 

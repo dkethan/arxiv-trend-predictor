@@ -3,8 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/advisor_response.dart';
 
 class ApiService {
-  static const String _baseUrl =
-      'https://arxiv-trend-predictor-api-001.onrender.com';
+  static const String _baseUrl = 'https://eidon-api-001.onrender.com';
 
   static Future<AdvisorResponse> getAdvice({
     required String title,
