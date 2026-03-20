@@ -73,13 +73,13 @@ class CreatorsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Built to explore research trends through data and machine learning.',
+                  'Meet the contributors behind arXiv Trend Advisor.',
                 style: TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 14,
                 ),
               ),
-              const SizedBox(height: 14),
+                const SizedBox(height: 16),
               ..._creators.map(
                 (creator) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -98,6 +98,17 @@ class CreatorsScreen extends StatelessWidget {
                   ),
                 ),
               ),
+                const SizedBox(height: 4),
+                const Center(
+                  child: Text(
+                    'Built to explore research trends through data and machine learning.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -129,20 +140,23 @@ class CreatorsScreen extends StatelessWidget {
       child: SizedBox(
         height: 56,
         child: Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _FooterLink(label: 'Home', onTap: () => _openHome(context)),
-              const _FooterDot(),
-              _FooterLink(
-                label: 'Project Link',
-                onTap: () => _openExternal(
-                  context,
-                  url: _projectUrl.toString(),
-                  fallbackMessage: 'Could not open project link.',
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _FooterLink(label: 'Back to Home', onTap: () => _openHome(context)),
+                const _FooterDot(),
+                _FooterLink(
+                  label: 'Explore Full Project on GitHub',
+                  onTap: () => _openExternal(
+                    context,
+                    url: _projectUrl.toString(),
+                    fallbackMessage: 'Could not open project link.',
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -170,7 +184,7 @@ class _CreatorCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 32,
+            radius: 54,
             backgroundColor: AppColors.surfaceElevated,
             backgroundImage: NetworkImage(creator.imageUrl),
           ),
@@ -197,12 +211,16 @@ class _CreatorCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                _InlineActionLink(
+                const Divider(color: AppColors.border, height: 1),
+                const SizedBox(height: 8),
+                _IconActionLink(
+                  icon: Icons.code_rounded,
                   label: 'GitHub Profile',
                   onTap: onOpenGithub,
                 ),
                 const SizedBox(height: 6),
-                _InlineActionLink(
+                _IconActionLink(
+                  icon: Icons.business_center_rounded,
                   label: 'LinkedIn Profile',
                   onTap: onOpenLinkedIn,
                 ),
@@ -215,11 +233,49 @@ class _CreatorCard extends StatelessWidget {
   }
 }
 
-class _InlineActionLink extends StatelessWidget {
+class _IconActionLink extends StatelessWidget {
+  final IconData icon;
   final String label;
   final VoidCallback onTap;
 
-  const _InlineActionLink({
+  const _IconActionLink({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: AppColors.text,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.accent,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FooterLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _FooterLink({
     required this.label,
     required this.onTap,
   });
@@ -231,8 +287,8 @@ class _InlineActionLink extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
+          fontSize: 12,
           color: AppColors.accent,
-          fontSize: 13,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -252,31 +308,6 @@ class _Creator {
     required this.githubUrl,
     required this.linkedInUrl,
   });
-}
-
-class _FooterLink extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _FooterLink({
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 13,
-          color: AppColors.accent,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
 }
 
 class _FooterDot extends StatelessWidget {
