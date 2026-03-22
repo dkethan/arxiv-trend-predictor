@@ -347,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
           controller: _abstractController,
           style: const TextStyle(color: AppColors.text, fontSize: 15),
           decoration: const InputDecoration(
-            hintText: 'Optional: paste or type your abstract...',
+            hintText: 'Paste or type your abstract...',
           ),
           maxLines: 5,
           minLines: 4,
