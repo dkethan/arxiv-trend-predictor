@@ -5,23 +5,23 @@ import 'package:url_launcher/url_launcher.dart';
 import 'home_screen.dart';
 import '../theme.dart';
 
-class CreatorsScreen extends StatelessWidget {
-  const CreatorsScreen({super.key});
+class DevelopersScreen extends StatelessWidget {
+  const DevelopersScreen({super.key});
 
-  static const List<_Creator> _creators = [
-    _Creator(
+  static const List<_Developer> _developers = [
+    _Developer(
       name: 'Jayashree Johnson',
       imageUrl: 'https://github.com/jayashreejohnson.png',
       githubUrl: 'https://github.com/jayashreejohnson',
       linkedInUrl: 'https://www.linkedin.com/in/jayashreejohnson/',
     ),
-    _Creator(
+    _Developer(
       name: 'Kamal Domandula',
       imageUrl: 'https://github.com/kamaldomandula.png',
       githubUrl: 'https://github.com/kamaldomandula',
       linkedInUrl: 'https://www.linkedin.com/in/kamaldomandula/',
     ),
-    _Creator(
+    _Developer(
       name: 'Kethan Dosapati',
       imageUrl: 'https://github.com/dkethan.png',
       githubUrl: 'https://github.com/dkethan',
@@ -68,7 +68,7 @@ class CreatorsScreen extends StatelessWidget {
     return Scaffold(
       bottomNavigationBar: _buildFooterBar(context),
       appBar: AppBar(
-        title: const Text('Creators'),
+        title: const Text('Developers'),
       ),
       body: SafeArea(
         bottom: false,
@@ -83,26 +83,26 @@ class CreatorsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Meet the contributors behind arXiv Trend Advisor.',
+                      'Meet the developers who built arXiv Trend Advisor.',
                       style: TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ..._creators.map(
-                      (creator) => Padding(
+                    ..._developers.map(
+                      (developer) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: _CreatorCard(
-                          creator: creator,
+                        child: _DeveloperCard(
+                          developer: developer,
                           onOpenGithub: () => _openExternal(
                             context,
-                            url: creator.githubUrl,
+                            url: developer.githubUrl,
                             fallbackMessage: 'Could not open GitHub profile.',
                           ),
                           onOpenLinkedIn: () => _openExternal(
                             context,
-                            url: creator.linkedInUrl,
+                            url: developer.linkedInUrl,
                             fallbackMessage: 'Could not open LinkedIn profile.',
                           ),
                         ),
@@ -111,7 +111,7 @@ class CreatorsScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     const Center(
                       child: Text(
-                        'Built to explore research trends through data and machine learning.',
+                        'Developed with data and machine learning to help you explore how ideas trend on arXiv.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: AppColors.textMuted,
@@ -177,13 +177,13 @@ class CreatorsScreen extends StatelessWidget {
   }
 }
 
-class _CreatorCard extends StatelessWidget {
-  final _Creator creator;
+class _DeveloperCard extends StatelessWidget {
+  final _Developer developer;
   final VoidCallback onOpenGithub;
   final VoidCallback onOpenLinkedIn;
 
-  const _CreatorCard({
-    required this.creator,
+  const _DeveloperCard({
+    required this.developer,
     required this.onOpenGithub,
     required this.onOpenLinkedIn,
   });
@@ -199,7 +199,7 @@ class _CreatorCard extends StatelessWidget {
           CircleAvatar(
             radius: 54,
             backgroundColor: AppColors.surfaceElevated,
-            backgroundImage: NetworkImage(creator.imageUrl),
+            backgroundImage: NetworkImage(developer.imageUrl),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -207,7 +207,7 @@ class _CreatorCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  creator.name,
+                  developer.name,
                   style: const TextStyle(
                     color: AppColors.text,
                     fontSize: 16,
@@ -216,7 +216,7 @@ class _CreatorCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 const Text(
-                  'Contributor',
+                  'Developer',
                   style: TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 12,
@@ -309,13 +309,13 @@ class _FooterLink extends StatelessWidget {
   }
 }
 
-class _Creator {
+class _Developer {
   final String name;
   final String imageUrl;
   final String githubUrl;
   final String linkedInUrl;
 
-  const _Creator({
+  const _Developer({
     required this.name,
     required this.imageUrl,
     required this.githubUrl,

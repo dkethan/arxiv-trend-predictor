@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../models/advisor_response.dart';
-import '../screens/creators_screen.dart';
+import '../screens/developers_screen.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../theme.dart';
 import '../widgets/domain_card.dart';
@@ -227,10 +227,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openCreatorsScreen() {
+  void _openDevelopersScreen() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const CreatorsScreen(),
+        builder: (_) => const DevelopersScreen(),
       ),
     );
   }
@@ -578,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _FooterLink(label: 'Creators', onTap: _openCreatorsScreen),
+                _FooterLink(label: 'Developers', onTap: _openDevelopersScreen),
                 const _FooterDot(),
                 _FooterLink(label: 'Project Link', onTap: _openProjectLink),
                 const _FooterDot(),

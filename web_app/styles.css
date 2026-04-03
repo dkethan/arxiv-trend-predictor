@@ -1070,20 +1070,20 @@ body::after {
   padding: 0.05rem 0.35rem;
 }
 
-/* ----- Creators page ----- */
-.creators-page .header {
+/* ----- Developers page ----- */
+.developers-page .header {
   margin-bottom: 0.9rem;
 }
 
-.creators-page .title {
+.developers-page .title {
   margin-bottom: 0.2em;
 }
 
-.creators-main {
+.developers-main {
   margin-top: 0.35rem;
 }
 
-.creators-section {
+.developers-section {
   display: grid;
   gap: 1.1rem;
 }
@@ -1182,7 +1182,7 @@ body::after {
   fill: currentColor;
 }
 
-.creators-more {
+.developers-more {
   margin: 0.75rem 0 0;
   padding-top: 0;
   border-top: none;
@@ -1191,13 +1191,13 @@ body::after {
   text-align: center;
 }
 
-.creators-more a {
+.developers-more a {
   color: var(--accent);
   text-decoration: none;
   font-weight: 500;
 }
 
-.creators-more a:hover {
+.developers-more a:hover {
   color: #36d4c4;
 }
 
