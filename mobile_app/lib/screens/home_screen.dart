@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../models/advisor_response.dart';
-import '../screens/creators_screen.dart';
+import '../screens/developers_screen.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../theme.dart';
 import '../widgets/domain_card.dart';
@@ -227,10 +227,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openCreatorsScreen() {
+  void _openDevelopersScreen() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const CreatorsScreen(),
+        builder: (_) => const DevelopersScreen(),
       ),
     );
   }
@@ -245,32 +245,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTabletWidth = screenWidth >= 768;
+    final horizontalPadding = isTabletWidth ? 64.0 : 20.0;
+    final maxContentWidth = isTabletWidth ? 600.0 : 680.0;
+
     return Scaffold(
       bottomNavigationBar: _buildFooterBar(),
       body: SingleChildScrollView(
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 0),
         child: SafeArea(
           bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
-              // Header
-              _buildHeader(),
-              const SizedBox(height: 32),
-              // Form
-              _buildForm(),
-              const SizedBox(height: 8),
-              _buildFormNote(),
-              // Status
-              if (_isLoading) _buildStatus(),
-              // Error
-              if (_error != null) _buildError(),
-              // Results
-              if (_result != null) _buildResults(),
-              const SizedBox(height: 80),
-            ],
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxContentWidth),
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 40),
+                    // Header
+                    _buildHeader(),
+                    const SizedBox(height: 32),
+                    // Form
+                    _buildForm(),
+                    const SizedBox(height: 8),
+                    _buildFormNote(),
+                    // Status
+                    if (_isLoading) _buildStatus(),
+                    // Error
+                    if (_error != null) _buildError(),
+                    // Results
+                    if (_result != null) _buildResults(),
+                    const SizedBox(height: 80),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -334,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
           controller: _abstractController,
           style: const TextStyle(color: AppColors.text, fontSize: 15),
           decoration: const InputDecoration(
-            hintText: 'Optional: paste or type your abstract...',
+            hintText: 'Paste or type your abstract...',
           ),
           maxLines: 5,
           minLines: 4,
@@ -509,13 +522,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return Column(
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: confidenceCard),
-                    const SizedBox(width: 12),
-                    Expanded(child: growthScoreCard),
-                  ],
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: confidenceCard),
+                      const SizedBox(width: 12),
+                      Expanded(child: growthScoreCard),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
                 confidenceVsGrowthCard,
@@ -563,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _FooterLink(label: 'Creators', onTap: _openCreatorsScreen),
+                _FooterLink(label: 'Developers', onTap: _openDevelopersScreen),
                 const _FooterDot(),
                 _FooterLink(label: 'Project Link', onTap: _openProjectLink),
                 const _FooterDot(),
