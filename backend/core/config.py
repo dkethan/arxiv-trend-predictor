@@ -42,6 +42,10 @@ class Settings:
     # Render and similar platforms set PORT; fall back to API_PORT then 60000
     api_host: str = os.getenv("API_HOST", "0.0.0.0")
     api_port: int = int(os.getenv("PORT") or os.getenv("API_PORT", "60000"))
+    similarity_model_name: str = os.getenv(
+        "SIMILARITY_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2"
+    )
+    similarity_top_k: int = int(os.getenv("SIMILARITY_TOP_K", "5"))
 
     @property
     def arxiv_data_dir(self) -> Path:
@@ -54,6 +58,22 @@ class Settings:
     @property
     def log_file(self) -> Path:
         return Path(os.getenv("LOG_FILE", self.project_root / "logs" / "app.log"))
+
+    @property
+    def similarity_dir(self) -> Path:
+        return self.analysis_output_dir / "similarity"
+
+    @property
+    def similarity_embeddings_file(self) -> Path:
+        return self.similarity_dir / "paper_embeddings.npy"
+
+    @property
+    def similarity_metadata_file(self) -> Path:
+        return self.similarity_dir / "paper_metadata.jsonl"
+
+    @property
+    def similarity_index_meta_file(self) -> Path:
+        return self.similarity_dir / "index_meta.json"
 
 
 # Singleton settings instance used throughout the project

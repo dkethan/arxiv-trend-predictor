@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-api-base="https://eidon-api-001.onrender.com">
+<html lang="en" data-api-base="http://0.0.0.0:60000">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,6 +22,7 @@
 
     <main class="main">
       <form id="advise-form" class="form" novalidate>
+        <p class="input-block-title">Idea A</p>
         <div class="field">
           <label for="title">Title</label>
           <input
@@ -39,13 +40,40 @@
             id="abstract"
             name="abstract"
             rows="5"
-            placeholder="Optional: paste or type your abstract..."
+            placeholder="Paste or type your abstract..."
             autocomplete="off"
           ></textarea>
         </div>
+        <label class="compare-toggle" for="enable-compare">
+          <input id="enable-compare" name="enable_compare" type="checkbox" />
+          <span>Add Idea B for comparison</span>
+        </label>
+        <div class="compare-inputs hidden" aria-hidden="true">
+          <p class="input-block-title">Idea B (for comparison)</p>
+          <div class="field">
+            <label for="title-b">Title</label>
+            <input
+              id="title-b"
+              name="title_b"
+              type="text"
+              placeholder="e.g. Sparse Foundation Models for Edge Devices"
+              autocomplete="off"
+            />
+          </div>
+          <div class="field">
+            <label for="abstract-b">Abstract</label>
+            <textarea
+              id="abstract-b"
+              name="abstract_b"
+              rows="5"
+              placeholder="Paste or type abstract for Idea B..."
+              autocomplete="off"
+            ></textarea>
+          </div>
+        </div>
         <div class="form-actions">
           <button type="submit" id="submit-btn" class="btn btn-primary">
-            Run analysis
+            Run analysis / compare
           </button>
           <div class="example-actions">
             <button type="button" class="btn btn-example" data-example="1">Eg 1 — Transformers</button>
@@ -59,23 +87,41 @@
       <section id="result" class="result hidden" aria-live="polite">
         <div class="result-inner">
           <h2 class="result-heading">Advice</h2>
-          <div id="viz-section" class="viz-section hidden">
-            <p class="viz-section-title">Insights</p>
-            <div class="charts-row">
-              <div class="chart-wrap chart-wrap-tall">
-                <canvas id="chart-confidence" aria-label="Domain confidence bar chart"></canvas>
-              </div>
-              <div class="chart-wrap chart-wrap-tall">
-                <canvas id="chart-growth" aria-label="Category growth gauge"></canvas>
-              </div>
-              <div class="chart-wrap scatter-wrap">
-                <canvas id="chart-scatter" aria-label="Confidence vs growth scatter"></canvas>
-              </div>
-            </div>
-            <div id="viz-numbers" class="viz-numbers" aria-live="polite"></div>
+          <div class="result-tabs" role="tablist" aria-label="Advice sections">
+            <button type="button" class="result-tab is-active" id="tab-btn-overview" data-tab-target="overview" role="tab" aria-selected="true" aria-controls="tab-panel-overview">Overview</button>
+            <button type="button" class="result-tab" id="tab-btn-trends" data-tab-target="trends" role="tab" aria-selected="false" aria-controls="tab-panel-trends">Trends</button>
+            <button type="button" class="result-tab" id="tab-btn-insights" data-tab-target="insights" role="tab" aria-selected="false" aria-controls="tab-panel-insights">Insights</button>
+            <button type="button" class="result-tab" id="tab-btn-similar" data-tab-target="similar" role="tab" aria-selected="false" aria-controls="tab-panel-similar">Similar Papers</button>
           </div>
-          <div id="result-domain" class="card domain-card"></div>
-          <div id="result-growth" class="card growth-card"></div>
+          <div id="tab-panel-overview" class="result-panel is-active" data-tab-panel="overview" role="tabpanel" aria-labelledby="tab-btn-overview">
+            <div id="result-overview" class="card overview-card"></div>
+            <div id="result-compare" class="card compare-card hidden"></div>
+          </div>
+          <div id="tab-panel-trends" class="result-panel" data-tab-panel="trends" role="tabpanel" aria-labelledby="tab-btn-trends" hidden>
+            <div id="viz-section" class="viz-section hidden">
+              <p class="viz-section-title">Trends</p>
+              <div class="charts-row">
+                <div class="chart-wrap chart-wrap-tall">
+                  <canvas id="chart-confidence" aria-label="Domain confidence bar chart"></canvas>
+                </div>
+                <div class="chart-wrap chart-wrap-tall">
+                  <canvas id="chart-growth" aria-label="Category growth gauge"></canvas>
+                </div>
+                <div class="chart-wrap scatter-wrap">
+                  <canvas id="chart-scatter" aria-label="Confidence vs growth scatter"></canvas>
+                </div>
+              </div>
+              <div id="viz-numbers" class="viz-numbers" aria-live="polite"></div>
+            </div>
+            <div id="result-growth" class="card growth-card"></div>
+          </div>
+          <div id="tab-panel-insights" class="result-panel" data-tab-panel="insights" role="tabpanel" aria-labelledby="tab-btn-insights" hidden>
+            <div id="result-domain" class="card domain-card"></div>
+            <div id="result-advisory" class="card advisory-card"></div>
+          </div>
+          <div id="tab-panel-similar" class="result-panel" data-tab-panel="similar" role="tabpanel" aria-labelledby="tab-btn-similar" hidden>
+            <div id="result-similar" class="card similar-card"></div>
+          </div>
         </div>
       </section>
 
@@ -86,7 +132,7 @@
 
     <footer class="footer footer-compact footer-bar">
       <p class="footer-links footer-links-one-line">
-        <a href="creators.html">Creators</a>
+        <a href="developers.html">Developers</a>
         <span aria-hidden="true">·</span>
         <a href="https://github.com/dkethan/arxiv-trend-predictor" target="_blank" rel="noopener">Project Link</a>
         <span aria-hidden="true">·</span>

@@ -71,6 +71,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTabletWidth = screenWidth >= 768;
+    final horizontalPadding = isTabletWidth ? 64.0 : 20.0;
+    final maxContentWidth = isTabletWidth ? 600.0 : 680.0;
+
     return Scaffold(
       bottomNavigationBar: _buildFooterBar(context),
       appBar: AppBar(
@@ -79,69 +84,77 @@ class PrivacyPolicyScreen extends StatelessWidget {
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 88),
-          child: Container(
-            decoration: appCardDecoration,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Effective date: March 19, 2026',
-                  style: TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'This Privacy Policy explains how the arXiv Trend Advisor app handles information when you use it.',
-                  style: TextStyle(color: AppColors.text, fontSize: 14, height: 1.5),
-                ),
-                const SizedBox(height: 14),
-                const _PolicyHeading(text: 'Information We Process'),
-                const _PolicyBody(
-                  text:
-                      'When you use the app, you may provide paper title and abstract text. This content is sent to our backend service to generate insights and returned for display.',
-                ),
-                const _PolicyHeading(text: 'Permissions'),
-                const _PolicyBody(
-                  text:
-                      'The Android app requests internet access so it can call the API. It does not intentionally request sensitive permissions such as camera, microphone, contacts, or location.',
-                ),
-                const _PolicyHeading(text: 'How We Use Information'),
-                const _PolicyBody(
-                  text:
-                      'Submitted content is used to run domain classification and trend analysis, return advisory results, and improve service reliability.',
-                ),
-                const _PolicyHeading(text: 'Contact'),
-                const Text(
-                  'For privacy questions or requests:',
-                  style: TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ..._contactEmails.map(
-                  (email) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: GestureDetector(
-                      onTap: () => _openEmail(context, email),
-                      child: Text(
-                        email,
-                        style: const TextStyle(
-                          color: AppColors.accent,
+          padding: EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 88),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxContentWidth),
+              child: SizedBox(
+                width: double.infinity,
+                child: Container(
+                  decoration: appCardDecoration,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Effective date: March 19, 2026',
+                        style: TextStyle(
+                          color: AppColors.textMuted,
                           fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'This Privacy Policy explains how the arXiv Trend Advisor app handles information when you use it.',
+                        style: TextStyle(color: AppColors.text, fontSize: 14, height: 1.5),
+                      ),
+                      const SizedBox(height: 14),
+                      const _PolicyHeading(text: 'Information We Process'),
+                      const _PolicyBody(
+                        text:
+                            'When you use the app, you may provide paper title and abstract text. This content is sent to our backend service to generate insights and returned for display.',
+                      ),
+                      const _PolicyHeading(text: 'Permissions'),
+                      const _PolicyBody(
+                        text:
+                            'The Android app requests internet access so it can call the API. It does not intentionally request sensitive permissions such as camera, microphone, contacts, or location.',
+                      ),
+                      const _PolicyHeading(text: 'How We Use Information'),
+                      const _PolicyBody(
+                        text:
+                            'Submitted content is used to run domain classification and trend analysis, return advisory results, and improve service reliability.',
+                      ),
+                      const _PolicyHeading(text: 'Contact'),
+                      const Text(
+                        'For privacy questions or requests:',
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ..._contactEmails.map(
+                        (email) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: GestureDetector(
+                            onTap: () => _openEmail(context, email),
+                            child: Text(
+                              email,
+                              style: const TextStyle(
+                                color: AppColors.accent,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),

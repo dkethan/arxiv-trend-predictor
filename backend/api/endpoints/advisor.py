@@ -3,7 +3,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from backend.api.services.advisor_service import advise, get_stats
+from backend.api.services.advisor_service import advise, compare_ideas, get_stats
 
 router = APIRouter(prefix="/api/v1/advisor", tags=["advisor"])
 
@@ -19,6 +19,16 @@ class IdeaRequest(BaseModel):
         min_length=1,
         description="Abstract or longer description of the idea (required)",
     )
+
+
+class CompareIdeaRequest(BaseModel):
+    title: str = Field(..., min_length=1, description="Idea title")
+    abstract: str = Field(..., min_length=1, description="Idea abstract")
+
+
+class IdeaComparisonRequest(BaseModel):
+    idea_a: CompareIdeaRequest
+    idea_b: CompareIdeaRequest
 
 
 @router.get("/stats", summary="Get comprehensive model statistics")
@@ -49,6 +59,8 @@ def advisor_advise(payload: IdeaRequest) -> Dict[str, Any]:
     - All predicted domains (multi-label classification)
     - Confidence scores for each predicted domain
     - Growth trends and momentum for predicted domains
+    - Advisory layer: opportunity score, signal type, keyword rationale, cluster insight
+    - Top 5 semantically similar papers with title and link
     - Model performance metrics
 
     Requires both title and abstract (mandatory fields).
@@ -85,6 +97,36 @@ def advisor_advise(payload: IdeaRequest) -> Dict[str, Any]:
     """
     try:
         return advise(payload.title, payload.abstract)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Model files not found. Please ensure model artifacts exist in backend/models/",
+        ) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(exc)}"
+        ) from exc
+
+
+@router.post("/compare", summary="Compare two research ideas side-by-side")
+def advisor_compare(payload: IdeaComparisonRequest) -> Dict[str, Any]:
+    """
+    Compare Idea A vs Idea B using the same advisory pipeline for both.
+
+    Returns:
+    - idea_a_result: full advisor output for idea A
+    - idea_b_result: full advisor output for idea B
+    - final_verdict: concise winner line based on opportunity score and growth
+    """
+    try:
+        return compare_ideas(
+            idea_a_title=payload.idea_a.title,
+            idea_a_abstract=payload.idea_a.abstract,
+            idea_b_title=payload.idea_b.title,
+            idea_b_abstract=payload.idea_b.abstract,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except FileNotFoundError as exc:
