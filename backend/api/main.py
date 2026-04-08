@@ -17,6 +17,11 @@ async def lifespan(_app: FastAPI):
         settings.api_host,
         settings.api_port,
     )
+    logger.info(
+        "Pinecone configured: api_key={} index_host={}",
+        "SET" if settings.pinecone_api_key else "MISSING",
+        settings.pinecone_index_host or "MISSING",
+    )
     yield
 
 

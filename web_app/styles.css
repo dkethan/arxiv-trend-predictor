@@ -1093,6 +1093,48 @@ body::after {
   margin-bottom: 0.35rem;
 }
 
+.narrative-section {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.narrative-section:first-of-type {
+  padding-top: 0.25rem;
+}
+
+.narrative-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.narrative-label {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent, #5eead4);
+}
+
+.narrative-body {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.narrative-list {
+  margin: 0.2rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.narrative-list li {
+  margin-bottom: 0.3rem;
+}
+
 .similar-list {
   display: flex;
   flex-direction: column;
@@ -1128,6 +1170,96 @@ body::after {
   border-top: 1px solid var(--border);
   color: var(--text-muted);
   font-size: 0.85rem;
+}
+
+.overview-breakdown {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.overview-breakdown-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 0.65rem;
+}
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.breakdown-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-raised, rgba(255,255,255,0.03));
+}
+
+.breakdown-factor {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.breakdown-level {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.breakdown-level-high  { color: #34d399; }
+.breakdown-level-mid   { color: #fbbf24; }
+.breakdown-level-low   { color: #f87171; }
+.breakdown-level-muted { color: var(--text-muted); }
+
+.breakdown-detail {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.overview-tips {
+  margin-top: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised, rgba(255,255,255,0.03));
+}
+
+.overview-tips-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.2rem;
+}
+
+.overview-tips-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 0.55rem;
+}
+
+.overview-tips-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.overview-tips-list li {
+  font-size: 0.86rem;
+  color: var(--text);
+  line-height: 1.45;
 }
 
 .compare-card.hidden {
@@ -1170,6 +1302,69 @@ body::after {
   color: var(--text);
   border-top: 1px solid var(--border);
   padding-top: 0.8rem;
+}
+
+/* New compare layout */
+.compare-heading {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+
+.compare-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.compare-card-new {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem 1.1rem;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.compare-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.compare-card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.compare-card-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.compare-card-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+
+.compare-verdict-new {
+  margin: 1.1rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* ----- Error ----- */
@@ -1469,7 +1664,8 @@ body::after {
   }
 
   .advisory-grid,
-  .compare-grid {
+  .compare-grid,
+  .compare-cards-grid {
     grid-template-columns: 1fr;
   }
 

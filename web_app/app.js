@@ -39,6 +39,8 @@
   const resultAdvisory = document.getElementById("result-advisory");
   const resultSimilar = document.getElementById("result-similar");
   const resultCompare = document.getElementById("result-compare");
+  const resultTabsBar = document.querySelector(".result-tabs");
+  const resultHeading = document.querySelector(".result-heading");
   const resultTabButtons = Array.prototype.slice.call(
     document.querySelectorAll(".result-tab")
   );
@@ -652,50 +654,103 @@
 
   function renderAdvisoryCard(data) {
     var advisory = data.advisory || {};
-    var why = advisory.why_this_prediction || {};
-    var cluster = advisory.cluster_insight || {};
-    var matched = Array.isArray(why.matched_keywords) ? why.matched_keywords : [];
-    var clusterKeywords = Array.isArray(cluster.keywords) ? cluster.keywords : [];
-    var sampleTitles = Array.isArray(cluster.sample_titles) ? cluster.sample_titles : [];
+    var narrative = advisory.narrative || {};
+
+    function narrativeSection(label, content) {
+      if (!content) return "";
+      return (
+        "<div class=\"narrative-section\">" +
+        "<p class=\"narrative-label\">" + escapeHtml(label) + "</p>" +
+        "<p class=\"narrative-body\">" + escapeHtml(content) + "</p>" +
+        "</div>"
+      );
+    }
+
+    var positionList = "";
+    if (Array.isArray(narrative.how_to_position) && narrative.how_to_position.length) {
+      positionList =
+        "<div class=\"narrative-section\">" +
+        "<p class=\"narrative-label\">How to position it</p>" +
+        "<ul class=\"narrative-list\">" +
+        narrative.how_to_position.map(function (item) {
+          return "<li>" + escapeHtml(item) + "</li>";
+        }).join("") +
+        "</ul></div>";
+    }
 
     resultAdvisory.innerHTML =
       "<p class=\"advisory-title\">Insights</p>" +
-      "<div class=\"advisory-subblock advisory-subblock-first\"><p class=\"advisory-subtitle\">Why this prediction</p><p class=\"advisory-text\">" +
-      (matched.length
-        ? "Matched keywords: " +
-          matched.map(function (w) {
-            return "<span class=\"chip\">" + escapeHtml(w) + "</span>";
-          }).join(" ")
-        : "No clear keyword overlap found in current domain dictionary.") +
-      "</p></div>" +
-      "<div class=\"advisory-subblock\"><p class=\"advisory-subtitle\">Cluster insight</p><p class=\"advisory-text\">" +
-      (cluster.cluster_id != null
-        ? "Closest cluster #" +
-          escapeHtml(cluster.cluster_id) +
-          " with keywords: " +
-          clusterKeywords
-            .map(function (w) {
-              return "<span class=\"chip\">" + escapeHtml(w) + "</span>";
-            })
-            .join(" ")
-        : "Cluster insight unavailable for this run.") +
-      "</p>" +
-      (sampleTitles.length
-        ? "<ul class=\"sample-title-list\">" +
-          sampleTitles
-            .map(function (t) {
-              return "<li>" + escapeHtml(t) + "</li>";
-            })
-            .join("") +
-          "</ul>"
-        : "") +
-      "</div>";
+      narrativeSection("Why this fits", narrative.why_this_fits) +
+      narrativeSection("Where it stands right now", narrative.where_it_stands) +
+      narrativeSection("Where it\u2019s going", narrative.where_its_going) +
+      positionList +
+      narrativeSection("Supporting signals", narrative.supporting_signals);
   }
+
+  var BREAKDOWN_META = {
+    semantic_alignment:  { label: "Semantic Alignment",   desc: "How well your idea aligns with existing research" },
+    growth_trajectory:   { label: "Growth Trajectory",    desc: "Growth momentum of the domain" },
+    cluster_density:     { label: "Competition Level",    desc: "How crowded the research cluster is" },
+    cross_domain_potential: { label: "Cross-domain Reach", desc: "How many research communities this touches" },
+  };
+
+  var BREAKDOWN_LEVEL_CLASS = {
+    "Strong": "breakdown-level-high",
+    "High": "breakdown-level-high",
+    "Low saturation": "breakdown-level-high",
+    "Emerging": "breakdown-level-mid",
+    "Moderate": "breakdown-level-mid",
+    "Narrow": "breakdown-level-mid",
+    "Weak": "breakdown-level-low",
+    "Slow": "breakdown-level-low",
+    "High saturation": "breakdown-level-low",
+    "Unknown": "breakdown-level-muted",
+  };
 
   function renderOverviewCard(data) {
     var advisory = data.advisory || {};
     var signal = advisory.signal_type || data.signal_type;
     var growthScore = advisory.growth_score || data.domain_growth_score;
+    var breakdown = advisory.score_breakdown || {};
+
+    var breakdownHtml = "";
+    if (Object.keys(breakdown).length) {
+      var tiles = Object.keys(BREAKDOWN_META).map(function (key) {
+        var meta = BREAKDOWN_META[key];
+        var factor = breakdown[key] || {};
+        var level = factor.level || "—";
+        var detail = factor.detail || "";
+        var levelClass = BREAKDOWN_LEVEL_CLASS[level] || "breakdown-level-muted";
+        return (
+          "<div class=\"breakdown-tile\">" +
+          "<span class=\"breakdown-factor\">" + escapeHtml(meta.label) + "</span>" +
+          "<span class=\"breakdown-level " + levelClass + "\">" + escapeHtml(level) + "</span>" +
+          "<span class=\"breakdown-detail\">" + escapeHtml(detail) + "</span>" +
+          "</div>"
+        );
+      }).join("");
+
+      var tips = advisory.improvement_tips;
+      var tipsHtml = "";
+      if (Array.isArray(tips) && tips.length) {
+        tipsHtml =
+          "<div class=\"overview-tips\">" +
+          "<p class=\"overview-tips-title\">What would improve this idea?</p>" +
+          "<p class=\"overview-tips-sub\">To increase your score:</p>" +
+          "<ul class=\"overview-tips-list\">" +
+          tips.map(function (t) { return "<li>" + escapeHtml(t) + "</li>"; }).join("") +
+          "</ul>" +
+          "</div>";
+      }
+
+      breakdownHtml =
+        "<div class=\"overview-breakdown\">" +
+        "<p class=\"overview-breakdown-title\">Why this score</p>" +
+        "<div class=\"breakdown-grid\">" + tiles + "</div>" +
+        "</div>" +
+        tipsHtml;
+    }
+
     resultOverview.innerHTML =
       "<p class=\"advisory-title\">Overview</p>" +
       "<div class=\"advisory-grid\">" +
@@ -709,7 +764,7 @@
       formatPercent(growthScore || 0) +
       "</span></div>" +
       "</div>" +
-      "<div class=\"overview-note\">Use the tabs to explore trends, detailed insights, and similar papers.</div>";
+      breakdownHtml;
   }
 
   function renderSimilarPapers(data) {
@@ -760,34 +815,29 @@
       return;
     }
 
-    function summary(result, label) {
+    function compareCard(result, label) {
       var advisory = result.advisory || {};
+      var opp = formatScoreOutOf10(advisory.opportunity_score || result.opportunity_score);
+      var sig = escapeHtml(signalLabel(advisory.signal_type || result.signal_type));
+      var growth = formatPercent(advisory.growth_score || result.domain_growth_score || 0);
       return (
-        "<div class=\"compare-side\">" +
-        "<p class=\"compare-side-title\">" +
-        label +
-        "</p>" +
-        "<p><span class=\"advisory-label\">Opportunity</span><span class=\"compare-side-value\">" +
-        formatScoreOutOf10(advisory.opportunity_score || result.opportunity_score) +
-        "</span></p>" +
-        "<p><span class=\"advisory-label\">Signal</span><span class=\"compare-side-value\">" +
-        escapeHtml(signalLabel(advisory.signal_type || result.signal_type)) +
-        "</span></p>" +
-        "<p><span class=\"advisory-label\">Growth</span><span class=\"compare-side-value\">" +
-        formatPercent(advisory.growth_score || result.domain_growth_score || 0) +
-        "</span></p>" +
+        "<div class=\"compare-card-new\">" +
+        "<p class=\"compare-card-title\">" + escapeHtml(label) + "</p>" +
+        "<div class=\"compare-card-row\"><span class=\"compare-card-label\">Opportunity</span><span class=\"compare-card-value\">" + opp + "</span></div>" +
+        "<div class=\"compare-card-row\"><span class=\"compare-card-label\">Signal</span><span class=\"compare-card-value\">" + sig + "</span></div>" +
+        "<div class=\"compare-card-row\"><span class=\"compare-card-label\">Growth</span><span class=\"compare-card-value\">" + growth + "</span></div>" +
         "</div>"
       );
     }
 
     resultCompare.classList.remove("hidden");
     resultCompare.innerHTML =
-      "<p class=\"advisory-title\">Idea comparison</p>" +
-      "<div class=\"compare-grid\">" +
-      summary(compareData.idea_a_result, "Idea A") +
-      summary(compareData.idea_b_result, "Idea B") +
+      "<p class=\"compare-heading\">Idea Comparison</p>" +
+      "<div class=\"compare-cards-grid\">" +
+      compareCard(compareData.idea_a_result, "Idea A") +
+      compareCard(compareData.idea_b_result, "Idea B") +
       "</div>" +
-      "<p class=\"compare-verdict\">" +
+      "<p class=\"compare-verdict-new\">" +
       escapeHtml(compareData.final_verdict || "Comparison complete.") +
       "</p>";
   }
@@ -807,7 +857,17 @@
       return (domainConfidence[b] || 0) - (domainConfidence[a] || 0);
     });
 
-    renderOverviewCard(data);
+    if (compareData) {
+      resultOverview.innerHTML = "";
+      resultOverview.style.display = "none";
+      if (resultTabsBar) resultTabsBar.style.display = "none";
+      if (resultHeading) resultHeading.style.display = "none";
+    } else {
+      resultOverview.style.display = "";
+      if (resultTabsBar) resultTabsBar.style.display = "";
+      if (resultHeading) resultHeading.style.display = "";
+      renderOverviewCard(data);
+    }
     renderNumbers(primaryDomain, allDomains, domainConfidence, growthInfo);
     renderDomainCard(primaryDomain, allDomains, domainConfidence, growthInfo, sortedByConf);
     renderGrowthCard(allDomains, growthInfo);
