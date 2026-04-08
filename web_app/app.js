@@ -652,44 +652,37 @@
 
   function renderAdvisoryCard(data) {
     var advisory = data.advisory || {};
-    var why = advisory.why_this_prediction || {};
-    var cluster = advisory.cluster_insight || {};
-    var matched = Array.isArray(why.matched_keywords) ? why.matched_keywords : [];
-    var clusterKeywords = Array.isArray(cluster.keywords) ? cluster.keywords : [];
-    var sampleTitles = Array.isArray(cluster.sample_titles) ? cluster.sample_titles : [];
+    var narrative = advisory.narrative || {};
+
+    function narrativeSection(label, content) {
+      if (!content) return "";
+      return (
+        "<div class=\"narrative-section\">" +
+        "<p class=\"narrative-label\">" + escapeHtml(label) + "</p>" +
+        "<p class=\"narrative-body\">" + escapeHtml(content) + "</p>" +
+        "</div>"
+      );
+    }
+
+    var positionList = "";
+    if (Array.isArray(narrative.how_to_position) && narrative.how_to_position.length) {
+      positionList =
+        "<div class=\"narrative-section\">" +
+        "<p class=\"narrative-label\">How to position it</p>" +
+        "<ul class=\"narrative-list\">" +
+        narrative.how_to_position.map(function (item) {
+          return "<li>" + escapeHtml(item) + "</li>";
+        }).join("") +
+        "</ul></div>";
+    }
 
     resultAdvisory.innerHTML =
       "<p class=\"advisory-title\">Insights</p>" +
-      "<div class=\"advisory-subblock advisory-subblock-first\"><p class=\"advisory-subtitle\">Why this prediction</p><p class=\"advisory-text\">" +
-      (matched.length
-        ? "Matched keywords: " +
-          matched.map(function (w) {
-            return "<span class=\"chip\">" + escapeHtml(w) + "</span>";
-          }).join(" ")
-        : "No clear keyword overlap found in current domain dictionary.") +
-      "</p></div>" +
-      "<div class=\"advisory-subblock\"><p class=\"advisory-subtitle\">Cluster insight</p><p class=\"advisory-text\">" +
-      (cluster.cluster_id != null
-        ? "Closest cluster #" +
-          escapeHtml(cluster.cluster_id) +
-          " with keywords: " +
-          clusterKeywords
-            .map(function (w) {
-              return "<span class=\"chip\">" + escapeHtml(w) + "</span>";
-            })
-            .join(" ")
-        : "Cluster insight unavailable for this run.") +
-      "</p>" +
-      (sampleTitles.length
-        ? "<ul class=\"sample-title-list\">" +
-          sampleTitles
-            .map(function (t) {
-              return "<li>" + escapeHtml(t) + "</li>";
-            })
-            .join("") +
-          "</ul>"
-        : "") +
-      "</div>";
+      narrativeSection("Why this fits", narrative.why_this_fits) +
+      narrativeSection("Where it stands right now", narrative.where_it_stands) +
+      narrativeSection("Where it\u2019s going", narrative.where_its_going) +
+      positionList +
+      narrativeSection("Supporting signals", narrative.supporting_signals);
   }
 
   function renderOverviewCard(data) {
