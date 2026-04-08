@@ -6,7 +6,7 @@ from research_pipeline.advisor.idea_advisor import (
 )
 from backend.logger import get_logger
 from backend.api.services.advisory_service import build_advisory_payload
-from backend.api.services.similarity_service import get_similar_papers
+from backend.api.services.similarity_service import get_similar_papers_with_note
 
 logger = get_logger(__name__)
 
@@ -90,10 +90,12 @@ def _build_extended_advice(title: str, abstract: str) -> Dict[str, Any]:
         domain_confidence=domain_conf,
         growth_info=growth_info,
     )
-    similar = get_similar_papers(f"{title} {abstract}")
+    similar, similarity_note = get_similar_papers_with_note(f"{title} {abstract}")
 
     base["advisory"] = advisory
     base["similar_papers"] = similar
+    if similarity_note:
+        base["similarity_note"] = similarity_note
     # Convenience fields for web compare and backward-compatible incremental rollout.
     base["opportunity_score"] = advisory.get("opportunity_score")
     base["signal_type"] = advisory.get("signal_type")
