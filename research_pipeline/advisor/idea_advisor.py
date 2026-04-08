@@ -18,7 +18,6 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import numpy as np
-import pandas as pd
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -95,6 +94,7 @@ def train_domain_classifier(
     test_size: float = 0.2,
     random_state: int = 42,
 ):
+    import pandas as pd
     print("\nLoading dataset...")
     df = pd.read_csv(csv_path)
 
@@ -213,7 +213,7 @@ def train_domain_classifier(
 # TEMPORAL MODELING
 # ============================================================
 
-def compute_temporal_trends(df: pd.DataFrame) -> Dict[str, Any]:
+def compute_temporal_trends(df) -> Dict[str, Any]:
     # Check for published_date or published column
     date_col = None
     if "published_date" in df.columns:
