@@ -1,98 +1,122 @@
-import json
 from functools import lru_cache
-from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-import numpy as np
-from sklearn.neighbors import NearestNeighbors
+import httpx
 
 from backend.core.config import settings
 
-
-def _read_jsonl(path: Path) -> List[Dict[str, Any]]:
-    rows: List[Dict[str, Any]] = []
-    if not path.exists():
-        return rows
-    with open(path, "r", encoding="utf-8") as handle:
-        for line in handle:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rows.append(json.loads(line))
-            except Exception:
-                continue
-    return rows
+PINECONE_UNAVAILABLE_NOTE = "Similarity unavailable: not connected to Pinecone."
 
 
-def _load_index_meta() -> Dict[str, Any]:
-    if not settings.similarity_index_meta_file.exists():
-        return {}
+def _pinecone_is_configured() -> bool:
+    return bool(settings.pinecone_api_key and settings.pinecone_index_host)
+
+
+@lru_cache(maxsize=1)
+def _pinecone_search_url() -> str:
+    host = settings.pinecone_index_host.strip()
+    if host.startswith("http://") or host.startswith("https://"):
+        base = host.rstrip("/")
+    else:
+        base = f"https://{host.rstrip('/')}"
+    namespace = settings.pinecone_index_namespace.strip() or "__default__"
+    return f"{base}/records/namespaces/{namespace}/search"
+
+
+def _coerce_similarity_score(hit: Dict[str, Any]) -> float:
+    score = hit.get("_score")
+    if score is None:
+        score = hit.get("score")
+    if score is None:
+        return 0.0
     try:
-        with open(settings.similarity_index_meta_file, "r", encoding="utf-8") as handle:
-            return json.load(handle)
+        return round(max(0.0, min(1.0, float(score))), 4)
     except Exception:
-        return {}
+        return 0.0
 
 
-@lru_cache(maxsize=1)
-def _load_similarity_assets() -> Tuple[np.ndarray, List[Dict[str, Any]], NearestNeighbors, str]:
-    embeddings_file = settings.similarity_embeddings_file
-    metadata_file = settings.similarity_metadata_file
-    if not embeddings_file.exists() or not metadata_file.exists():
-        raise FileNotFoundError("Similarity index artifacts are not available.")
-
-    embeddings = np.load(embeddings_file)
-    if embeddings.ndim != 2:
-        raise ValueError("Embeddings matrix must be 2-dimensional.")
-
-    metadata = _read_jsonl(metadata_file)
-    if len(metadata) != embeddings.shape[0]:
-        raise ValueError("Embeddings row count does not match metadata records.")
-
-    nn = NearestNeighbors(metric="cosine", algorithm="brute")
-    nn.fit(embeddings)
-
-    index_meta = _load_index_meta()
-    model_name = index_meta.get("model_name", settings.similarity_model_name)
-    return embeddings, metadata, nn, model_name
+def _hit_fields(hit: Dict[str, Any]) -> Dict[str, Any]:
+    fields = hit.get("fields")
+    if isinstance(fields, dict):
+        return fields
+    metadata = hit.get("metadata")
+    if isinstance(metadata, dict):
+        return metadata
+    return {}
 
 
-@lru_cache(maxsize=1)
-def _load_query_encoder(model_name: str):
-    from sentence_transformers import SentenceTransformer
+def _map_hit_to_paper(hit: Dict[str, Any]) -> Dict[str, Any]:
+    fields = _hit_fields(hit)
+    arxiv_id = fields.get("arxiv_id") or hit.get("_id") or hit.get("id")
+    link = fields.get("link") or fields.get("pdf_url") or fields.get("arxiv_url")
+    if not link and arxiv_id:
+        link = f"https://arxiv.org/abs/{arxiv_id}"
+    return {
+        "title": fields.get("title") or fields.get(settings.pinecone_text_field, ""),
+        "similarity_score": _coerce_similarity_score(hit),
+        "year": fields.get("year"),
+        "domain": fields.get("domain") or fields.get("tech_domain"),
+        "link": link,
+        "arxiv_id": arxiv_id,
+    }
 
-    return SentenceTransformer(model_name)
+
+def _extract_hits(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    result = payload.get("result")
+    if isinstance(result, dict):
+        hits = result.get("hits")
+        if isinstance(hits, list):
+            return [h for h in hits if isinstance(h, dict)]
+    matches = payload.get("matches")
+    if isinstance(matches, list):
+        return [m for m in matches if isinstance(m, dict)]
+    hits = payload.get("hits")
+    if isinstance(hits, list):
+        return [h for h in hits if isinstance(h, dict)]
+    return []
 
 
-def get_similar_papers(text: str, top_k: int = None) -> List[Dict[str, Any]]:
+def get_similar_papers_with_note(
+    text: str, top_k: Optional[int] = None
+) -> Tuple[List[Dict[str, Any]], Optional[str]]:
     if not text or len(text.strip()) < 20:
-        return []
+        return [], None
 
-    try:
-        _embeddings, metadata, nn, model_name = _load_similarity_assets()
-    except Exception:
-        return []
+    if not _pinecone_is_configured():
+        return [], PINECONE_UNAVAILABLE_NOTE
 
     k = top_k or settings.similarity_top_k
-    k = max(1, min(k, len(metadata)))
-
-    encoder = _load_query_encoder(model_name)
-    query_vec = encoder.encode([text], normalize_embeddings=True)
-    distances, indices = nn.kneighbors(query_vec, n_neighbors=k)
-
-    results: List[Dict[str, Any]] = []
-    for distance, idx in zip(distances[0], indices[0]):
-        paper = metadata[int(idx)]
-        similarity = max(0.0, min(1.0, 1.0 - float(distance)))
-        results.append(
-            {
-                "title": paper.get("title", ""),
-                "similarity_score": round(similarity, 4),
-                "year": paper.get("year"),
-                "domain": paper.get("tech_domain"),
-                "link": paper.get("pdf_url") or paper.get("arxiv_url"),
-                "arxiv_id": paper.get("arxiv_id"),
-            }
+    k = max(1, int(k))
+    body = {
+        "query": {
+            "inputs": {"text": text},
+            "top_k": k,
+        },
+        "fields": ["title", "year", "domain", "tech_domain", "pdf_url", "arxiv_url", "link", "arxiv_id"],
+    }
+    headers = {
+        "Api-Key": settings.pinecone_api_key,
+        "X-Pinecone-Api-Version": settings.pinecone_api_version,
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+    try:
+        response = httpx.post(
+            _pinecone_search_url(),
+            headers=headers,
+            json=body,
+            timeout=settings.pinecone_timeout_seconds,
         )
-    return results
+        response.raise_for_status()
+        payload = response.json()
+    except Exception:
+        return [], PINECONE_UNAVAILABLE_NOTE
+
+    hits = _extract_hits(payload)
+    papers = [_map_hit_to_paper(hit) for hit in hits]
+    return papers, None
+
+
+def get_similar_papers(text: str, top_k: Optional[int] = None) -> List[Dict[str, Any]]:
+    papers, _note = get_similar_papers_with_note(text=text, top_k=top_k)
+    return papers

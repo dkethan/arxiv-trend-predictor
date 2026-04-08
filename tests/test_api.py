@@ -43,6 +43,7 @@ def test_advise_extended_response_contract(monkeypatch):
                     "link": "https://arxiv.org/abs/1706.03762",
                 }
             ],
+            "similarity_note": "Similarity unavailable: not connected to Pinecone.",
             "opportunity_score": 7.8,
             "signal_type": "strong_bet",
             "domain_growth_score": 0.67,
@@ -58,6 +59,7 @@ def test_advise_extended_response_contract(monkeypatch):
     body = resp.json()
     assert "advisory" in body
     assert "similar_papers" in body
+    assert "similarity_note" in body
     assert body["signal_type"] == "strong_bet"
     assert body["similar_papers"][0]["link"].startswith("https://")
 

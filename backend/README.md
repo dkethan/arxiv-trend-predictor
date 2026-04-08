@@ -39,7 +39,10 @@ Interactive docs:
    - **Health check path:** `/health` (optional; enables zero-downtime deploys)
 
 4. **Environment variables** (optional): In the service **Environment** tab, add any of:
-   - `LOG_LEVEL`, `DATA_DIR`, `MODEL_DIR`, `ARXIV_START_YEAR`, `ARXIV_END_YEAR`, `PAPERS_PER_CATEGORY_PER_YEAR`, `ENABLE_ANALYSIS_EMBEDDINGS`, `ENABLE_PLOTTING`  
+   - `LOG_LEVEL`, `DATA_DIR`, `MODEL_DIR`, `ARXIV_START_YEAR`, `ARXIV_END_YEAR`, `PAPERS_PER_CATEGORY_PER_YEAR`, `ENABLE_ANALYSIS_EMBEDDINGS`, `ENABLE_PLOTTING`
+   - `SIMILARITY_TOP_K`, `PINECONE_API_KEY`, `PINECONE_INDEX_HOST`, `PINECONE_NAMESPACE`, `PINECONE_TEXT_FIELD`, `PINECONE_API_VERSION`, `PINECONE_TIMEOUT_SECONDS`
    See `.env.example` in the repo root. Render sets `PORT` automatically; the app uses it when present.
+
+Similarity retrieval is Pinecone-backed. If Pinecone is not configured or temporarily unavailable, the API returns `similar_papers: []` and a `similarity_note` message.
 
 5. **Deploy**: Render builds and deploys on each push to the linked branch. The API will be at `https://<service-name>.onrender.com` (e.g. `/docs`, `/health`, `/api/v1/advisor/advise`).
