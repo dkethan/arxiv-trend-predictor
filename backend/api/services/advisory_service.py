@@ -212,6 +212,93 @@ _STANDING_BY_SIGNAL = {
 }
 
 
+def _score_breakdown(
+    primary_conf: float,
+    growth_score: float,
+    cluster: Dict[str, Any],
+    all_domains_count: int,
+) -> Dict[str, Any]:
+    if primary_conf >= 0.65:
+        alignment = {"level": "Strong", "detail": "High confidence match with domain keywords"}
+    elif primary_conf >= 0.45:
+        alignment = {"level": "Moderate", "detail": "Reasonable fit with domain signals"}
+    else:
+        alignment = {"level": "Weak", "detail": "Limited alignment with known domain signals"}
+
+    if growth_score >= 0.55:
+        growth = {"level": "Strong", "detail": "Domain is on a steep upward trajectory"}
+    elif growth_score >= 0.40:
+        growth = {"level": "Emerging", "detail": "Domain shows early growth momentum"}
+    else:
+        growth = {"level": "Slow", "detail": "Domain growth is plateauing or saturated"}
+
+    cluster_size = cluster.get("size") or 0
+    if cluster_size == 0:
+        density = {"level": "Unknown", "detail": "Cluster data unavailable"}
+    elif cluster_size < 50:
+        density = {"level": "Low saturation", "detail": "Small cluster — less competition"}
+    elif cluster_size < 150:
+        density = {"level": "Moderate", "detail": "Active cluster with established work"}
+    else:
+        density = {"level": "High saturation", "detail": "Large cluster — hard to stand out"}
+
+    if all_domains_count >= 3:
+        cross = {"level": "High", "detail": "Bridges multiple research communities"}
+    elif all_domains_count == 2:
+        cross = {"level": "Moderate", "detail": "Connects two research areas"}
+    else:
+        cross = {"level": "Narrow", "detail": "Focused within a single domain"}
+
+    return {
+        "semantic_alignment": alignment,
+        "growth_trajectory": growth,
+        "cluster_density": density,
+        "cross_domain_potential": cross,
+    }
+
+
+def _improvement_tips(
+    primary_domain: str,
+    breakdown: Dict[str, Any],
+) -> List[str]:
+    dk = _DOMAIN_KNOWLEDGE.get(primary_domain, {})
+    position = list(dk.get("position", []))
+    going = dk.get("going", "")
+
+    alignment_level = (breakdown.get("semantic_alignment") or {}).get("level", "")
+    growth_level = (breakdown.get("growth_trajectory") or {}).get("level", "")
+    density_level = (breakdown.get("cluster_density") or {}).get("level", "")
+    cross_level = (breakdown.get("cross_domain_potential") or {}).get("level", "")
+
+    tips: List[str] = []
+
+    # Weak semantic alignment → lead with domain-specific positioning
+    if alignment_level in ("Weak", "Moderate") and position:
+        tips.append(position[0])
+
+    # Slow or emerging growth → steer toward where the domain is heading
+    if growth_level in ("Slow", "Emerging") and going:
+        direction = going.split(".")[0].rstrip()
+        tips.append(f"Pivot toward current momentum: {direction[0].lower()}{direction[1:]}")
+
+    # Saturated cluster → suggest differentiation
+    if density_level == "High saturation":
+        tips.append("Target under-explored datasets or niche sub-problems to differentiate")
+        if len(position) > 1:
+            tips.append(position[1])
+
+    # Narrow cross-domain → encourage bridging
+    if cross_level == "Narrow":
+        tips.append("Bridge your idea to an adjacent domain to broaden research impact")
+
+    # Fill remaining slots with domain-specific positioning hints
+    for p in position:
+        if p not in tips and len(tips) < 4:
+            tips.append(p)
+
+    return [t[0].upper() + t[1:] if t else t for t in tips[:4]]
+
+
 def _build_narrative(
     title: str,
     abstract: str,
@@ -401,6 +488,7 @@ def build_advisory_payload(
     primary_domain: str,
     domain_confidence: Dict[str, Any],
     growth_info: Dict[str, Any],
+    all_domains: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     analysis_data = _load_analysis_results()
 
@@ -421,6 +509,9 @@ def build_advisory_payload(
         matched_keywords=why.get("matched_keywords", []),
         cluster=cluster,
     )
+    all_domains_count = len(all_domains) if all_domains else 1
+    breakdown = _score_breakdown(primary_conf, growth_score, cluster, all_domains_count)
+    improvement_tips = _improvement_tips(primary_domain, breakdown)
 
     return {
         "opportunity_score": opportunity,
@@ -429,4 +520,6 @@ def build_advisory_payload(
         "why_this_prediction": why,
         "cluster_insight": cluster,
         "narrative": narrative,
+        "score_breakdown": breakdown,
+        "improvement_tips": improvement_tips,
     }

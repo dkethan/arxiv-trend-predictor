@@ -83,12 +83,14 @@ def _build_extended_advice(title: str, abstract: str) -> Dict[str, Any]:
     primary_domain = base.get("primary_domain") or ""
     domain_conf = base.get("domain_confidence", {}) or {}
     growth_info = base.get("growth_info", {}) or {}
+    all_domains = base.get("all_domains") or [primary_domain]
     advisory = build_advisory_payload(
         title=title,
         abstract=abstract,
         primary_domain=primary_domain,
         domain_confidence=domain_conf,
         growth_info=growth_info,
+        all_domains=all_domains,
     )
     similar, similarity_note = get_similar_papers_with_note(f"{title} {abstract}")
 
