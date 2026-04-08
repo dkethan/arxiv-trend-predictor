@@ -42,10 +42,15 @@ class Settings:
     # Render and similar platforms set PORT; fall back to API_PORT then 60000
     api_host: str = os.getenv("API_HOST", "0.0.0.0")
     api_port: int = int(os.getenv("PORT") or os.getenv("API_PORT", "60000"))
-    similarity_model_name: str = os.getenv(
-        "SIMILARITY_MODEL_NAME", "sentence-transformers/all-MiniLM-L6-v2"
-    )
     similarity_top_k: int = int(os.getenv("SIMILARITY_TOP_K", "5"))
+    pinecone_api_key: str = os.getenv("PINECONE_API_KEY", "")
+    pinecone_index_host: str = os.getenv("PINECONE_INDEX_HOST", "")
+    pinecone_index_namespace: str = os.getenv("PINECONE_NAMESPACE", "__default__")
+    pinecone_text_field: str = os.getenv("PINECONE_TEXT_FIELD", "text")
+    pinecone_api_version: str = os.getenv("PINECONE_API_VERSION", "2025-01")
+    pinecone_timeout_seconds: float = float(
+        os.getenv("PINECONE_TIMEOUT_SECONDS", "5.0")
+    )
 
     @property
     def arxiv_data_dir(self) -> Path:
@@ -59,21 +64,6 @@ class Settings:
     def log_file(self) -> Path:
         return Path(os.getenv("LOG_FILE", self.project_root / "logs" / "app.log"))
 
-    @property
-    def similarity_dir(self) -> Path:
-        return self.analysis_output_dir / "similarity"
-
-    @property
-    def similarity_embeddings_file(self) -> Path:
-        return self.similarity_dir / "paper_embeddings.npy"
-
-    @property
-    def similarity_metadata_file(self) -> Path:
-        return self.similarity_dir / "paper_metadata.jsonl"
-
-    @property
-    def similarity_index_meta_file(self) -> Path:
-        return self.similarity_dir / "index_meta.json"
 
 
 # Singleton settings instance used throughout the project

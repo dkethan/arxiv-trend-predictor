@@ -714,9 +714,14 @@
 
   function renderSimilarPapers(data) {
     var papers = Array.isArray(data.similar_papers) ? data.similar_papers : [];
+    var similarityNote = data.similarity_note
+      ? escapeHtml(data.similarity_note)
+      : "Pinecone similarity is not connected right now.";
     if (!papers.length) {
       resultSimilar.innerHTML =
-        "<p class=\"advisory-title\">Top similar papers</p><p class=\"advisory-text\">No similarity index found yet. Build index to enable this section.</p>";
+        "<p class=\"advisory-title\">Top similar papers</p><p class=\"advisory-text\">" +
+        similarityNote +
+        "</p>";
       return;
     }
 

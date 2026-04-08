@@ -59,6 +59,19 @@ Expected output:
 
 - charts and report in `data/analysis_output/evaluation/`
 
+### 5) Upsert similarity records to Pinecone (for API similar papers)
+
+Set `PINECONE_API_KEY`, `PINECONE_INDEX_HOST`, and optional `PINECONE_NAMESPACE`, then run:
+
+```bash
+python -m research_pipeline.advisor.upsert_similarity_to_pinecone
+```
+
+Notes:
+
+- This pushes title/abstract text and metadata to Pinecone for advisor similarity retrieval.
+- `research_pipeline.advisor.build_similarity_index` is now deprecated for runtime API usage.
+
 ## Quick verification checklist
 
 - Data exists in `data/arxiv_data/`

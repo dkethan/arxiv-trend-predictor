@@ -1,6 +1,0 @@
-{
-  "model_name": "sentence-transformers/all-MiniLM-L6-v2",
-  "csv_path": "/Users/kethandosapati/Developer/personal/arxiv-trend-predictor-001/data/arxiv_data/arxiv_tech_papers_20260210_161210.csv",
-  "num_records": 36965,
-  "embedding_dim": 384
-}

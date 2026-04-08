@@ -69,13 +69,21 @@ python -m research_pipeline.advisor.multi_model_idea_advisor
 python -m research_pipeline.advisor.model_evaluation
 ```
 
-### 5) Start the API
+### 5) Upsert similarity records to Pinecone (recommended)
+
+Set Pinecone env vars (`PINECONE_API_KEY`, `PINECONE_INDEX_HOST`, optional `PINECONE_NAMESPACE`) and run:
+
+```bash
+python -m research_pipeline.advisor.upsert_similarity_to_pinecone
+```
+
+### 6) Start the API
 
 ```bash
 python -m backend.main
 ```
 
-### 6) Test the advisor endpoint
+### 7) Test the advisor endpoint
 
 ```bash
 curl -X POST "http://0.0.0.0:60000/api/v1/advisor/advise" \
@@ -86,7 +94,7 @@ curl -X POST "http://0.0.0.0:60000/api/v1/advisor/advise" \
   }'
 ```
 
-### 7) Run clients
+### 8) Run clients
 
 - Web app setup: `web_app/README.md`
 - Mobile app setup: `mobile_app/README.md`
