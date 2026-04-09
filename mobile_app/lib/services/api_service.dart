@@ -35,6 +35,40 @@ class ApiService {
       );
     }
   }
+
+  /// Web: POST `/api/v1/advisor/compare` with `idea_a` / `idea_b`.
+  static Future<CompareIdeasResult> compareIdeas({
+    required String titleA,
+    required String abstractA,
+    required String titleB,
+    required String abstractB,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/api/v1/advisor/compare');
+
+    final response = await http
+        .post(
+          uri,
+          headers: {
+            'accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'idea_a': {'title': titleA, 'abstract': abstractA},
+            'idea_b': {'title': titleB, 'abstract': abstractB},
+          }),
+        )
+        .timeout(const Duration(seconds: 90));
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return CompareIdeasResult.fromJson(json);
+    } else {
+      throw ApiException(
+        statusCode: response.statusCode,
+        message: 'Server returned ${response.statusCode}: ${response.body}',
+      );
+    }
+  }
 }
 
 class ApiException implements Exception {

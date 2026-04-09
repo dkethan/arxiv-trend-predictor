@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:math' as math;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,10 +11,12 @@ import '../models/advisor_response.dart';
 import '../screens/developers_screen.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../theme.dart';
+import '../widgets/advice_panel_widgets.dart';
 import '../widgets/domain_card.dart';
 import '../widgets/growth_card.dart';
 import '../widgets/viz_numbers_card.dart';
 import '../widgets/insights_chart_cards.dart';
+import '../widgets/idea_comparison_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,17 +31,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final _titleController = TextEditingController();
   final _abstractController = TextEditingController();
+  final _titleBController = TextEditingController();
+  final _abstractBController = TextEditingController();
   final _scrollController = ScrollController();
   final _resultsKey = GlobalKey();
 
   bool _isLoading = false;
   AdvisorResponse? _result;
+  AdvisorResponse? _compareIdeaB;
+  String _compareVerdict = '';
+  bool _enableCompare = false;
   String? _error;
+  /// Web: .result-tabs — Overview, Trends, Insights, Similar Papers
+  int _adviceTabIndex = 0;
 
   @override
   void dispose() {
     _titleController.dispose();
     _abstractController.dispose();
+    _titleBController.dispose();
+    _abstractBController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -58,9 +71,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _submit() async {
     final title = _titleController.text.trim();
-    if (title.isEmpty) {
-      setState(() => _error = 'Please enter a title.');
+    final abstractA = _abstractController.text.trim();
+    if (title.isEmpty || abstractA.isEmpty) {
+      setState(() => _error =
+          'Please enter title and abstract for Idea A (both are required by the API).');
       return;
+    }
+
+    if (_enableCompare) {
+      final titleB = _titleBController.text.trim();
+      final abstractB = _abstractBController.text.trim();
+      if (titleB.isEmpty || abstractB.isEmpty) {
+        setState(() => _error =
+            'Please provide both title and abstract for Idea B.');
+        return;
+      }
     }
 
     FocusScope.of(context).unfocus();
@@ -68,18 +93,52 @@ class _HomeScreenState extends State<HomeScreen> {
       _isLoading = true;
       _error = null;
       _result = null;
+      _compareIdeaB = null;
+      _compareVerdict = '';
     });
 
     try {
-      final result = await ApiService.getAdvice(
-        title: title,
-        abstract_: _abstractController.text.trim(),
-      );
-      setState(() {
-        _result = result;
-        _isLoading = false;
-      });
-      // Scroll to results
+      if (_enableCompare) {
+        final cmp = await ApiService.compareIdeas(
+          titleA: title,
+          abstractA: abstractA,
+          titleB: _titleBController.text.trim(),
+          abstractB: _abstractBController.text.trim(),
+        );
+        setState(() {
+          _result = cmp.ideaAResult;
+          _compareIdeaB = cmp.ideaBResult;
+          _compareVerdict = cmp.finalVerdict;
+          _isLoading = false;
+          _adviceTabIndex = 0;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Comparison complete.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else {
+        final result = await ApiService.getAdvice(
+          title: title,
+          abstract_: abstractA,
+        );
+        setState(() {
+          _result = result;
+          _isLoading = false;
+          _adviceTabIndex = 0;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Done.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
       await Future.delayed(const Duration(milliseconds: 150));
       if (_resultsKey.currentContext != null) {
         Scrollable.ensureVisible(
@@ -245,28 +304,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final mq = MediaQuery.of(context);
+    final screenWidth = mq.size.width;
     final isTabletWidth = screenWidth >= 768;
-    final horizontalPadding = isTabletWidth ? 64.0 : 20.0;
-    final maxContentWidth = isTabletWidth ? 600.0 : 680.0;
+    // Web: .page max-width 560px; horizontal max(1.5rem, safe-area)
+    final maxContentWidth = isTabletWidth ? 600.0 : 560.0;
+    final minGutter = isTabletWidth ? 64.0 : 24.0;
+    final scrollBottomPad = 100.0 + mq.padding.bottom;
 
     return Scaffold(
       bottomNavigationBar: _buildFooterBar(),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 0),
-        child: SafeArea(
-          bottom: false,
-          child: Center(
+      body: SafeArea(
+        minimum: EdgeInsets.only(
+          top: 48,
+          left: minGutter,
+          right: minGutter,
+        ),
+        bottom: false,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          // Align top-center — never use Center here: unbounded height breaks Column layout.
+          child: Align(
+            alignment: Alignment.topCenter,
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: maxContentWidth),
-              child: SizedBox(
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40),
-                    // Header
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                    // Header (web: padding-top already max(3rem, safe) via SafeArea.minimum)
                     _buildHeader(),
                     const SizedBox(height: 32),
                     // Form
@@ -279,10 +345,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (_error != null) _buildError(),
                     // Results
                     if (_result != null) _buildResults(),
-                    const SizedBox(height: 80),
+                    // Web: 6.25rem + safe-area below last content (fixed footer)
+                    SizedBox(height: scrollBottomPad),
                   ],
                 ),
-              ),
             ),
           ),
         ),
@@ -291,36 +357,43 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ShaderMask(
-          shaderCallback: (bounds) => const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, AppColors.textMuted],
-          ).createShader(bounds),
-          child: Text(
-            'arXiv Trend Advisor',
-            style: GoogleFonts.syne(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-              height: 1.15,
-              letterSpacing: -0.03 * 32,
-              color: Colors.white,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Web: clamp(2rem, 5vw, 2.75rem) for .title
+        final w = constraints.maxWidth;
+        final titleSize = (w * 0.05).clamp(32.0, 44.0);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, AppColors.textMuted],
+              ).createShader(bounds),
+              child: Text(
+                'arXiv Trend Advisor',
+                style: GoogleFonts.syne(
+                  fontSize: titleSize,
+                  fontWeight: FontWeight.w700,
+                  height: 1.15,
+                  letterSpacing: -0.03 * titleSize,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'See where your idea fits and how it trends on arXiv.',
-          style: GoogleFonts.outfit(
-            color: AppColors.textMuted,
-            fontSize: 16.8,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-      ],
+            const SizedBox(height: 8),
+            Text(
+              'See where your idea fits and how it trends on arXiv.',
+              style: GoogleFonts.outfit(
+                color: AppColors.textMuted,
+                fontSize: 16.8,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -328,12 +401,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          'IDEA A',
+          style: GoogleFonts.outfit(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.06 * 12.5,
+            color: AppColors.textMuted,
+          ),
+        ),
+        const SizedBox(height: 10),
         // Title label
         const _FieldLabel('Title'),
         const SizedBox(height: 6),
         TextField(
           controller: _titleController,
-          style: const TextStyle(color: AppColors.text, fontSize: 15),
+          style: const TextStyle(color: AppColors.text, fontSize: 16),
           decoration: const InputDecoration(
             hintText: 'e.g. Neural Radiance Fields for View Synthesis',
           ),
@@ -345,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 6),
         TextField(
           controller: _abstractController,
-          style: const TextStyle(color: AppColors.text, fontSize: 15),
+          style: const TextStyle(color: AppColors.text, fontSize: 16),
           decoration: const InputDecoration(
             hintText: 'Paste or type your abstract...',
           ),
@@ -353,32 +436,134 @@ class _HomeScreenState extends State<HomeScreen> {
           minLines: 4,
           textInputAction: TextInputAction.done,
         ),
-        const SizedBox(height: 20),
-        // Buttons row
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _PrimaryButton(
-              label: 'Run analysis',
-              isLoading: _isLoading,
-              onPressed: _isLoading ? null : _submit,
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
+        const SizedBox(height: 16),
+        InkWell(
+          onTap: () => setState(() => _enableCompare = !_enableCompare),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _ExampleButton(
-                  label: 'Ex 1 — Transformers',
-                  onPressed: () => _fillExample(1),
+                SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: Checkbox(
+                    value: _enableCompare,
+                    onChanged: (v) =>
+                        setState(() => _enableCompare = v ?? false),
+                    activeColor: AppColors.accent,
+                    checkColor: AppColors.bg,
+                    side: const BorderSide(color: AppColors.border),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
+                  ),
                 ),
-                _ExampleButton(
-                  label: 'Ex 2 — NeRF',
-                  onPressed: () => _fillExample(2),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Add Idea B for comparison',
+                    style: GoogleFonts.outfit(
+                      fontSize: 14.1,
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),
-          ],
+          ),
+        ),
+        if (_enableCompare) ...[
+          const SizedBox(height: 16),
+          Container(height: 1, color: AppColors.border),
+          const SizedBox(height: 16),
+          Text(
+            'IDEA B (FOR COMPARISON)',
+            style: GoogleFonts.outfit(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.06 * 12.5,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const _FieldLabel('Title'),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _titleBController,
+            style: const TextStyle(color: AppColors.text, fontSize: 16),
+            decoration: const InputDecoration(
+              hintText: 'e.g. Sparse Foundation Models for Edge Devices',
+            ),
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 20),
+          const _FieldLabel('Abstract'),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _abstractBController,
+            style: const TextStyle(color: AppColors.text, fontSize: 16),
+            decoration: const InputDecoration(
+              hintText: 'Paste or type abstract for Idea B...',
+            ),
+            maxLines: 5,
+            minLines: 4,
+            textInputAction: TextInputAction.done,
+          ),
+        ],
+        const SizedBox(height: 20),
+        LayoutBuilder(
+          builder: (context, c) {
+            final narrow = c.maxWidth < 400;
+            final stackExamples = c.maxWidth <= 560;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _PrimaryButton(
+                  label: _enableCompare
+                      ? 'Run analysis / compare'
+                      : 'Run analysis',
+                  isLoading: _isLoading,
+                  expand: narrow,
+                  onPressed: _isLoading ? null : _submit,
+                ),
+                const SizedBox(height: 10),
+                if (stackExamples)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _ExampleButton(
+                        label: 'Eg 1 — Transformers',
+                        expand: true,
+                        onPressed: () => _fillExample(1),
+                      ),
+                      const SizedBox(height: 10),
+                      _ExampleButton(
+                        label: 'Eg 2 — NeRF',
+                        expand: true,
+                        onPressed: () => _fillExample(2),
+                      ),
+                    ],
+                  )
+                else
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _ExampleButton(
+                        label: 'Eg 1 — Transformers',
+                        onPressed: () => _fillExample(1),
+                      ),
+                      _ExampleButton(
+                        label: 'Eg 2 — NeRF',
+                        onPressed: () => _fillExample(2),
+                      ),
+                    ],
+                  ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -401,15 +586,23 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                   color: AppColors.text, fontWeight: FontWeight.w600),
             ),
-            const TextSpan(text: ' to run analysis. Click '),
             const TextSpan(
-              text: 'Ex 1 — Transformers',
+                text:
+                    ' to analyze Idea A. Enable “Add Idea B” and use '),
+            const TextSpan(
+              text: 'Run analysis / compare',
+              style: TextStyle(
+                  color: AppColors.text, fontWeight: FontWeight.w600),
+            ),
+            const TextSpan(text: ' to compare two ideas. Click '),
+            const TextSpan(
+              text: 'Eg 1 — Transformers',
               style: TextStyle(
                   color: AppColors.text, fontWeight: FontWeight.w600),
             ),
             const TextSpan(text: ' or '),
             const TextSpan(
-              text: 'Ex 2 — NeRF',
+              text: 'Eg 2 — NeRF',
               style: TextStyle(
                   color: AppColors.text, fontWeight: FontWeight.w600),
             ),
@@ -423,22 +616,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatus() {
-    return const Padding(
-      padding: EdgeInsets.only(top: 8, bottom: 16),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
       child: Row(
         children: [
-          SizedBox(
-            width: 14,
-            height: 14,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: AppColors.accent,
-            ),
+          const CupertinoActivityIndicator(
+            radius: 6,
+            color: AppColors.accent,
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Text(
-            'Calling advisor…',
-            style: TextStyle(fontSize: 14, color: AppColors.textMuted),
+            _enableCompare ? 'Comparing ideas…' : 'Calling advisor…',
+            style: const TextStyle(fontSize: 14, color: AppColors.textMuted),
           ),
         ],
       ),
@@ -463,13 +652,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildResults() {
     final r = _result!;
-    // Web: .result-inner padding 0.25rem 0 1.5rem; .card margin-bottom 1rem
+    // Comparison: single card only (web-style compare focus).
+    if (_compareIdeaB != null) {
+      return Column(
+        key: _resultsKey,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 24),
+          IdeaComparisonCard(
+            ideaA: r,
+            ideaB: _compareIdeaB!,
+            finalVerdict: _compareVerdict,
+          ),
+        ],
+      );
+    }
+
     return Column(
       key: _resultsKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 24),
-        // "Advice" heading (web: .result-heading — 1.1rem, margin 0 0 1.25rem)
         Text(
           'Advice',
           style: GoogleFonts.syne(
@@ -479,11 +682,113 @@ class _HomeScreenState extends State<HomeScreen> {
             color: AppColors.textMuted,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
+        _buildAdviceTabBar(),
+        const SizedBox(height: 12),
+        _buildAdviceTabContent(r),
+      ],
+    );
+  }
 
-        // Insights block (web: .viz-section — first thing after heading)
+  static const _adviceTabLabels = [
+    'Overview',
+    'Trends',
+    'Insights',
+    'Similar Papers',
+  ];
+
+  Widget _buildAdviceTabBar() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+          color: Colors.white.withValues(alpha: 0.03),
+        ),
+        child: Row(
+          children: List.generate(_adviceTabLabels.length, (i) {
+            final active = _adviceTabIndex == i;
+            return Padding(
+              padding: EdgeInsets.only(
+                right: i < _adviceTabLabels.length - 1 ? 5 : 0,
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => setState(() => _adviceTabIndex = i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      gradient: active
+                          ? const LinearGradient(
+                              colors: [AppColors.accent, Color(0xFF26A89A)],
+                            )
+                          : null,
+                      border: Border.all(
+                        color: active
+                            ? Colors.white.withValues(alpha: 0.18)
+                            : Colors.transparent,
+                      ),
+                    ),
+                    child: Text(
+                      _adviceTabLabels[i],
+                      style: GoogleFonts.outfit(
+                        fontSize: 13.1,
+                        fontWeight: FontWeight.w600,
+                        color: active ? AppColors.bg : AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdviceTabContent(AdvisorResponse r) {
+    switch (_adviceTabIndex) {
+      case 0:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AdviceOverviewCard(result: r),
+          ],
+        );
+      case 1:
+        return _buildTrendsTab(r);
+      case 2:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DomainCard(result: r),
+            const SizedBox(height: 16),
+            AdviceNarrativeCard(result: r),
+          ],
+        );
+      case 3:
+        return SimilarPapersCard(result: r);
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildTrendsTab(AdvisorResponse r) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         Text(
-          'INSIGHTS',
+          'TRENDS',
           style: GoogleFonts.syne(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -494,18 +799,12 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 12),
         LayoutBuilder(
           builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 600;
-            final confidenceCard = ChartConfidenceCard(
-              result: r,
-            );
-            final growthScoreCard = ChartGrowthCard(
-              result: r,
-            );
+            final isMobile = constraints.maxWidth < 380;
+            final confidenceCard = ChartConfidenceCard(result: r);
+            final growthScoreCard = ChartGrowthCard(result: r);
             final confidenceVsGrowthCard = SizedBox(
               height: 260,
-              child: ChartScatterCard(
-                result: r,
-              ),
+              child: ChartScatterCard(result: r),
             );
 
             if (isMobile) {
@@ -541,52 +840,44 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 16),
         VizNumbersCard(result: r),
         const SizedBox(height: 16),
-
-        // Card 1: Domain (web: .domain-card)
-        DomainCard(
-          result: r,
-        ),
-        const SizedBox(height: 16),
-
-        // Card 2: Growth (web: .growth-card)
-        GrowthCard(
-          result: r,
-        ),
+        GrowthCard(result: r),
       ],
     );
   }
 
   Widget _buildFooterBar() {
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-    return Container(
-      padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated.withValues(alpha: 0.96),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.32),
-            blurRadius: 16,
-            offset: const Offset(0, -3),
+    final mq = MediaQuery.of(context);
+    final bottomInset = math.max(12.0, mq.padding.bottom);
+    final leftInset = math.max(16.0, mq.padding.left);
+    final rightInset = math.max(16.0, mq.padding.right);
+    return Material(
+      color: const Color(0xFF0A0B0F).withValues(alpha: 0.88),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(leftInset, 12, rightInset, bottomInset),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.04)),
           ),
-        ],
-      ),
-      child: SizedBox(
-        height: 56,
-        child: Center(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _FooterLink(label: 'Developers', onTap: _openDevelopersScreen),
-                const _FooterDot(),
-                _FooterLink(label: 'Project Link', onTap: _openProjectLink),
-                const _FooterDot(),
-                _FooterLink(
-                  label: 'Privacy Policy',
-                  onTap: _openPrivacyPolicyScreen,
-                ),
-              ],
+        ),
+        // Bounded height so Scaffold does not give the bar unbounded height (links looked "centered" on full screen).
+        child: SizedBox(
+          height: 48,
+          child: Center(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _FooterLink(label: 'Developers', onTap: _openDevelopersScreen),
+                  const _FooterDot(),
+                  _FooterLink(label: 'Project Link', onTap: _openProjectLink),
+                  const _FooterDot(),
+                  _FooterLink(
+                    label: 'Privacy Policy',
+                    onTap: _openPrivacyPolicyScreen,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -618,17 +909,19 @@ class _FieldLabel extends StatelessWidget {
 class _PrimaryButton extends StatelessWidget {
   final String label;
   final bool isLoading;
+  final bool expand;
   final VoidCallback? onPressed;
 
   const _PrimaryButton({
     required this.label,
     required this.isLoading,
+    this.expand = false,
     this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final child = Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         gradient: const LinearGradient(
@@ -652,50 +945,65 @@ class _PrimaryButton extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
             child: isLoading
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
+                ? const Center(
+                    child: CupertinoActivityIndicator(
+                      radius: 7,
                       color: AppColors.bg,
                     ),
                   )
-                : Text(
-                    label,
-                    style: const TextStyle(
-                      color: AppColors.bg,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                      letterSpacing: 0.3,
+                : Center(
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.syne(
+                        color: AppColors.bg,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15.2,
+                        letterSpacing: 0.3,
+                      ),
                     ),
                   ),
           ),
         ),
       ),
     );
+    if (expand) {
+      return SizedBox(width: double.infinity, child: child);
+    }
+    return child;
   }
 }
 
 class _ExampleButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
+  final bool expand;
 
-  const _ExampleButton({required this.label, required this.onPressed});
+  const _ExampleButton({
+    required this.label,
+    required this.onPressed,
+    this.expand = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
+    final btn = OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.text,
         backgroundColor: AppColors.surface,
         side: const BorderSide(color: AppColors.border),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        minimumSize: expand ? const Size(double.infinity, 44) : null,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
       ),
-      child: Text(label),
+      child: Text(label, textAlign: TextAlign.center),
     );
+    if (expand) {
+      return SizedBox(width: double.infinity, child: btn);
+    }
+    return btn;
   }
 }
 
