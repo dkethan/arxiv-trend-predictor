@@ -209,11 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   final chromeUri = Uri.parse(
                     'googlechrome://navigate?url=${Uri.encodeComponent(_projectUrl.toString())}',
                   );
-                  final launched = await launchUrl(
-                    chromeUri,
-                    mode: LaunchMode.externalApplication,
-                  );
-                  if (!launched) await _launchDefaultBrowser();
+                  await _launchAppSpecificBrowser(chromeUri);
                 },
               ),
               _openWithTile(
@@ -224,11 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   final firefoxUri = Uri.parse(
                     'firefox://open-url?url=${Uri.encodeComponent(_projectUrl.toString())}',
                   );
-                  final launched = await launchUrl(
-                    firefoxUri,
-                    mode: LaunchMode.externalApplication,
-                  );
-                  if (!launched) await _launchDefaultBrowser();
+                  await _launchAppSpecificBrowser(firefoxUri);
                 },
               ),
             ],
@@ -260,6 +252,19 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       onTap: onTap,
     );
+  }
+
+  /// Chrome/Firefox custom schemes throw [PlatformException] if the app is not installed.
+  Future<void> _launchAppSpecificBrowser(Uri schemeUri) async {
+    try {
+      final launched = await launchUrl(
+        schemeUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) await _launchDefaultBrowser();
+    } catch (_) {
+      await _launchDefaultBrowser();
+    }
   }
 
   Future<void> _launchDefaultBrowser() async {

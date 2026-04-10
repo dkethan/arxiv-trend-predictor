@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     // Use a unique, non-reserved package name
-    namespace = "com.kethandosapati.arxiv_trend_advisor"
+    namespace = "com.eiden.arxiv_trend_advisor"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -31,7 +31,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.kethandosapati.arxiv_trend_advisor"
+        applicationId = "com.eiden.arxiv_trend_advisor"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
