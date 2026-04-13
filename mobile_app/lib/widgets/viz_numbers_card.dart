@@ -38,177 +38,202 @@ class VizNumbersCard extends StatelessWidget {
         : null;
     final cardSurfaceColor = AppColors.surface.withValues(alpha: 0.85);
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: appCardDecoration,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'NUMBERS AT A GLANCE',
-            style: GoogleFonts.outfit(
-              fontSize: 11.2,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.08 * 11.2,
-              color: AppColors.textMuted,
-            ),
-          ),
-          const SizedBox(height: 12),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+    Widget primaryTile({bool minHeight = false}) {
+      return Container(
+        width: double.infinity,
+        constraints:
+            minHeight ? const BoxConstraints(minHeight: 120) : null,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: cardSurfaceColor,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: cardSurfaceColor,
-                      border: Border.all(color: AppColors.border),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _StatLabel('PRIMARY'),
-                            const SizedBox(height: 8),
-                            _buildPrimaryCodeText(primaryCode),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'confidence',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textMuted,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _pct(result.domainConfidence),
-                              style: GoogleFonts.jetBrainsMono(
-                                fontSize: 36,
-                                fontWeight: FontWeight.w700,
-                                height: 1,
-                                color: AppColors.text,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                const _StatLabel('PRIMARY'),
+                const SizedBox(height: 8),
+                _buildPrimaryCodeText(primaryCode),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'confidence',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: cardSurfaceColor,
-                            border: Border.all(color: AppColors.border),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const _StatLabel('TOP GROWTH'),
-                              const SizedBox(height: 6),
-                              Text(
-                                topGrowth == null ? '—' : topGrowth.key,
-                                style: GoogleFonts.syne(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.1,
-                                  color: const Color(0xFF2ED8A8),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'slope ${topGrowth == null ? '—' : topGrowth.value.toStringAsFixed(3)}',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: cardSurfaceColor,
-                            border: Border.all(color: AppColors.border),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const _StatLabel('DOMAINS'),
-                              const SizedBox(height: 6),
-                              Text(
-                                '${predicted.length}',
-                                style: GoogleFonts.jetBrainsMono(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1,
-                                  color: AppColors.text,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'predicted',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 4),
+                Text(
+                  _pct(result.domainConfidence),
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
+                    color: AppColors.text,
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: cardSurfaceColor,
-              border: Border.all(color: AppColors.border),
-              borderRadius: BorderRadius.circular(8),
+          ],
+        ),
+      );
+    }
+
+    Widget topGrowthTile({bool minHeight = false}) {
+      return Container(
+        width: double.infinity,
+        constraints:
+            minHeight ? const BoxConstraints(minHeight: 120) : null,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: cardSurfaceColor,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const _StatLabel('TOP GROWTH'),
+            const SizedBox(height: 6),
+            Text(
+              topGrowth == null ? '—' : topGrowth.key,
+              style: GoogleFonts.syne(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                height: 1.1,
+                color: const Color(0xFF2ED8A8),
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 4),
+            Text(
+              'slope ${topGrowth == null ? '—' : topGrowth.value.toStringAsFixed(3)}',
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget domainsTile({bool minHeight = false}) {
+      return Container(
+        width: double.infinity,
+        constraints:
+            minHeight ? const BoxConstraints(minHeight: 120) : null,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: cardSurfaceColor,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const _StatLabel('DOMAINS'),
+            const SizedBox(height: 6),
+            Text(
+              '${predicted.length}',
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 30,
+                fontWeight: FontWeight.w700,
+                height: 1,
+                color: AppColors.text,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'predicted',
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget summaryRow({required bool stack}) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: cardSurfaceColor,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: stack
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _StatLabel('BEST R² FIT'),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${bestR2Fit == null ? '—' : bestR2Fit.key} — ${bestR2Fit == null ? '—' : bestR2Fit.value.toStringAsFixed(3)}',
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.text,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const _StatLabel('AVG CONFIDENCE'),
+                  const SizedBox(height: 4),
+                  Text(
+                    _pct(avgConfidence),
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.text,
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const _StatLabel('BEST R² FIT'),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${bestR2Fit == null ? '—' : bestR2Fit.key} — ${bestR2Fit == null ? '—' : bestR2Fit.value.toStringAsFixed(3)}',
+                          style: GoogleFonts.jetBrainsMono(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.text,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const _StatLabel('BEST R² FIT'),
+                      const _StatLabel('AVG CONFIDENCE'),
                       const SizedBox(height: 4),
                       Text(
-                        '${bestR2Fit == null ? '—' : bestR2Fit.key} — ${bestR2Fit == null ? '—' : bestR2Fit.value.toStringAsFixed(3)}',
+                        _pct(avgConfidence),
                         style: GoogleFonts.jetBrainsMono(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -217,28 +242,65 @@ class VizNumbersCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                ],
+              ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Web: .viz-stat-layout stacks below 760px
+        final stackGrid = constraints.maxWidth < 760;
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: appCardDecoration,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'NUMBERS AT A GLANCE',
+                style: GoogleFonts.outfit(
+                  fontSize: 11.2,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.08 * 11.2,
+                  color: AppColors.textMuted,
                 ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const _StatLabel('AVG CONFIDENCE'),
-                    const SizedBox(height: 4),
-                    Text(
-                      _pct(avgConfidence),
-                      style: GoogleFonts.jetBrainsMono(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.text,
+              ),
+              const SizedBox(height: 12),
+              if (stackGrid) ...[
+                primaryTile(minHeight: true),
+                const SizedBox(height: 10),
+                topGrowthTile(minHeight: true),
+                const SizedBox(height: 10),
+                domainsTile(minHeight: true),
+              ] else
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: primaryTile()),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(child: topGrowthTile()),
+                            const SizedBox(height: 10),
+                            Expanded(child: domainsTile()),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              const SizedBox(height: 10),
+              summaryRow(stack: stackGrid),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

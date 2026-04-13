@@ -1,4 +1,4 @@
-package com.kethandosapati.arxiv_trend_advisor
+package com.eiden.arxiv_trend_advisor
 
 import android.content.Intent
 import android.net.Uri
